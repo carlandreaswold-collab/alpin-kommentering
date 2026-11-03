@@ -74,6 +74,7 @@ td.omg,th.omg{color:var(--mut);font-size:13px}
 .arkiv table tr:nth-child(even) td:not(.tid):not(.bak){background:rgba(255,255,255,.03)}
 .arkiv table tr.p1 td:first-child{box-shadow:inset 4px 0 #ffd700}.arkiv table tr.p2 td:first-child{box-shadow:inset 4px 0 #d4dbe6}.arkiv table tr.p3 td:first-child{box-shadow:inset 4px 0 #cd7f32}
 .arkiv table tr.p1 td.tid{background:rgba(255,215,0,.22)}
+tr.go td:nth-child(2){color:var(--acc)}tr.go:hover td:nth-child(2){text-decoration:underline}tr.inakt td:nth-child(2){color:var(--mut)}
 tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
 .arkiv .races{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .arkiv .races button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
@@ -93,7 +94,7 @@ tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
   <datalist id="dl"></datalist>
 </header>
 <main id="app"></main>
-<script src="data.js?v=20261103190538"></script>
+<script src="data.js?v=20261103190851"></script>
 <script>
 const D = window.ALPIN_DATA;
 const SEX = {K:'Kvinner', M:'Menn'};
@@ -313,8 +314,8 @@ function arkiv(){
     <div class="races">${list.map(x=>`<button class="${r&&x.id===r.id?'on':''}" data-r="${x.id}">${esc(lbl(x))}</button>`).join('')||'<span class="note">Ingen renn.</span>'}</div>
     ${r?`<h2 style="margin:6px 0">${esc(r.place)} (${esc(r.nat)}) · ${DSHORT[r.disc]} · ${SEX[S.sex]} · ${r.date}</h2>
     <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}<th class="r">Startnr ${NOW}</th></tr>
-    ${rows.map(x=>`<tr class="go${x.v>=1&&x.v<=3?' p'+x.v:''}" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}<td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
-    <p class="note">${r.par?'Parallellrenn (utslag): FIS har ingen sluttider. ':''}Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk en rad for å åpne kortet.</p>`:''}
+    ${rows.map(x=>`<tr class="${x.a.aktiv?'go':'inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}"${x.a.aktiv?` data-id="${x.a.id}"`:' title="Ikke aktiv utøver"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}<td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
+    <p class="note">${r.par?'Parallellrenn (utslag): FIS har ingen sluttider. ':''}Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk et blått navn (aktive utøvere) for å åpne kortet.</p>`:''}
   </div>`;
 }
 const CD = {SL:'Slalåm', GS:'Storslalåm', SG:'Super-G', DH:'Utfor', AC:'Kombinasjon'};
@@ -335,8 +336,8 @@ function medalje(){
     ${r?`<h2 style="margin:6px 0">${S.ch} · ${CD[S.cd]} · ${SEX[S.sex]} · ${esc(r.place)} (${esc(r.nat)}) · ${r.date}</h2>
     <div class="chips" style="margin-bottom:10px">${medals.map(x=>`<div class="chip ${x.v===1?'p1':'pod'}" style="font-size:15px"><b>${x.v===1?'🥇':x.v===2?'🥈':'🥉'} ${esc(x.a.name)}</b><i>${esc(x.a.land||'')}</i></div>`).join('')}</div>
     <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}</tr>
-    ${rows.map(x=>`<tr class="go${x.v>=1&&x.v<=3?' p'+x.v:''}" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}</tr>`).join('')}</table>
-    <p class="note">Full resultatliste fra FIS. Lagkonkurranser og parallell er ikke med. Klikk en rad for å åpne kortet.</p>`:'<p class="note">Ingen mesterskapsdata.</p>'}
+    ${rows.map(x=>`<tr class="${x.a.aktiv?'go':'inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}"${x.a.aktiv?` data-id="${x.a.id}"`:' title="Ikke aktiv utøver"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}</tr>`).join('')}</table>
+    <p class="note">Full resultatliste fra FIS. Lagkonkurranser og parallell er ikke med. Klikk et blått navn (aktive utøvere) for å åpne kortet.</p>`:'<p class="note">Ingen mesterskapsdata.</p>'}
   </div>`;
 }
 function nytt(){
