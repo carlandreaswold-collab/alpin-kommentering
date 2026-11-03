@@ -321813,7 +321813,7 @@ window.ALPIN_DATA = {
    }
   ]
  },
- "generert": "2026-11-03 16:54",
+ "generert": "2026-11-03 18:37",
  "athletes": [
   {
    "id": "K:zrinka ljutic",
@@ -358873,7 +358873,7 @@ window.ALPIN_DATA = {
    "source": "Ski Team Sweden",
    "text": "Rutinert svensk ener; testet mykere flex i støvlene for bedre respons på flate partier etter økter i Kvitfjell.",
    "sex": "K",
-   "id": null
+   "id": "K:anne swenn larsson"
   },
   {
    "name": "Katharina Liensberger",
@@ -358881,7 +358881,7 @@ window.ALPIN_DATA = {
    "source": "Ski Austria",
    "text": "Tilbake på ski i Sölden etter alvorlig kneskade i januar; mister Sölden og Levi, men vurderer hjemmerennet i Gurgl.",
    "sex": "K",
-   "id": null
+   "id": "F190907"
   },
   {
    "name": "Laurence St Germain",
@@ -358945,7 +358945,7 @@ window.ALPIN_DATA = {
    "source": "Swiss-Ski",
    "text": "Totalvinneren forberedt på full verdenscupsesong; terpet overganger og glid på Saas-Fee, og bekrefter at kneet tåler maksimal belastning i alle fartsrenn.",
    "sex": "K",
-   "id": null
+   "id": "F125871"
   },
   {
    "name": "Kajsa Vickhoff Lie",
@@ -359057,26 +359057,10 @@ window.ALPIN_DATA = {
    "source": "Ski Slovakia",
    "text": "Klar for comeback i verdenscupen i Sölden etter nesten tre år borte fra sirkuset; har ny trener i Mario Rafetzeder.",
    "sex": "K",
-   "id": null
-  },
-  {
-   "name": "Petra Vlhova",
-   "date": "2026-10-01",
-   "source": "Ski Slovakia",
-   "text": "Klar for comeback i verdenscupen i Sölden etter nesten tre år borte fra sirkuset; har ny trener i Mario Rafetzeder.",
-   "sex": "K",
    "id": "K:petra vlhova"
   },
   {
    "name": "Valérie Grenier",
-   "date": "2026-10-01",
-   "source": "Alpine Canada",
-   "text": "Sveitsiske Mauro Pini overtar som hennes personlige trener etter at han forlot det italienske herrelaget.",
-   "sex": "K",
-   "id": null
-  },
-  {
-   "name": "Valerie Grenier",
    "date": "2026-10-01",
    "source": "Alpine Canada",
    "text": "Sveitsiske Mauro Pini overtar som hennes personlige trener etter at han forlot det italienske herrelaget.",
@@ -359090,14 +359074,6 @@ window.ALPIN_DATA = {
    "text": "Pådro seg hjernerystelse under trening i Val Senales, men meldes klar til Sölden etter noen dagers hvile.",
    "sex": "K",
    "id": "K:cornelia öhlund"
-  },
-  {
-   "name": "Cornelia Oehlund",
-   "date": "2026-10-01",
-   "source": "Ski Team Sweden",
-   "text": "Pådro seg hjernerystelse under trening i Val Senales, men meldes klar til Sölden etter noen dagers hvile.",
-   "sex": "K",
-   "id": null
   },
   {
    "name": "Nina Astner",
@@ -359249,7 +359225,7 @@ window.ALPIN_DATA = {
    "source": "Skiforbundet / NRK",
    "text": "Røk akillessenen under utfortrening i Chile; til undersøkelser i Innsbruck, sesongen i fare.",
    "sex": "M",
-   "id": null
+   "id": "F137380"
   },
   {
    "name": "Vincent Kriechmayr",
@@ -359265,7 +359241,7 @@ window.ALPIN_DATA = {
    "source": "FFS",
    "text": "Trener aggressiv linjeføring mot Bormio og Kitzbühel.",
    "sex": "M",
-   "id": null
+   "id": "F154653"
   },
   {
    "name": "Dominik Paris",
@@ -359297,7 +359273,7 @@ window.ALPIN_DATA = {
    "source": "Skiforbundet",
    "text": "Vist gnistrende form på samling i Chile og Saas-Fee, klar for Sölden.",
    "sex": "M",
-   "id": null
+   "id": "F222507"
   },
   {
    "name": "Rasmus Bakkevig",
@@ -359353,7 +359329,7 @@ window.ALPIN_DATA = {
    "source": "Ski Austria / ORF",
    "text": "Tilbake for fullt på snø etter ryggbehandling; kjører med finjustert støveloppsett for mindre belastning på korsryggen.",
    "sex": "M",
-   "id": null
+   "id": "F137557"
   },
   {
    "name": "Kristoffer Jakobsen",
@@ -359361,7 +359337,7 @@ window.ALPIN_DATA = {
    "source": "SVT Sport",
    "text": "Bytter tilbake til sitt tidligere utstyrsoppsett for å eliminere feil og finne stabiliteten.",
    "sex": "M",
-   "id": null
+   "id": "F160443"
   },
   {
    "name": "Filip Zubcic",
@@ -359401,7 +359377,7 @@ window.ALPIN_DATA = {
    "source": "Skiforbundet / NRK",
    "text": "Gjennomførte vellykket fartsblokk i Valle Nevado; melder om god skulder- og leggstabilitet, sikter mot start i Beaver Creek.",
    "sex": "M",
-   "id": null
+   "id": "F137380"
   },
   {
    "name": "Lucas Pinheiro Braathen",
@@ -359433,7 +359409,7 @@ window.ALPIN_DATA = {
    "source": "FFS / L'Équipe",
    "text": "Solid fartstrening i La Parva (Chile); bekrefter 100 % fysisk form etter fjorårets skader, klar for fartsklassikerne.",
    "sex": "M",
-   "id": null
+   "id": "F154653"
   },
   {
    "name": "Marco Schwarz",
@@ -359449,7 +359425,7 @@ window.ALPIN_DATA = {
    "source": "Skiforbundet / NRK",
    "text": "Viste imponerende tider på tidskjøringene i Valle Nevado (Chile); kjemper om lederposisjonen i det norske teknikklaget.",
    "sex": "M",
-   "id": null
+   "id": "F222507"
   },
   {
    "name": "Marcel Hirscher",
@@ -359457,7 +359433,7 @@ window.ALPIN_DATA = {
    "source": "SkiNEWS / Neveitalia",
    "text": "Dropper sesongåpningen i Sölden; treningstidene var for langt bak konkurrentene og sparer wildcard-starter.",
    "sex": "M",
-   "id": null
+   "id": "F106332"
   },
   {
    "name": "Luca De Aliprandini",
@@ -359473,7 +359449,7 @@ window.ALPIN_DATA = {
    "source": "ORF Sport / SkiNEWS",
    "text": "Avslutter karrieren som 37-åring etter langvarig skadekamp siden det alvorlige fallet i Copper Mountain 2022.",
    "sex": "M",
-   "id": null
+   "id": "F106318"
   },
   {
    "name": "Sam Maes",
@@ -359489,15 +359465,7 @@ window.ALPIN_DATA = {
    "source": "Ski Austria / SkiNEWS",
    "text": "Får sin verdenscupdebut i Sölden etter å ha vunnet den interne østerrikske uttakskvalifiseringen.",
    "sex": "M",
-   "id": null
-  },
-  {
-   "name": "Kristoffer Jakobsen",
-   "date": "2026-10-14",
-   "source": "SVT Sport",
-   "text": "Bytter tilbake til sitt tidligere utstyrsoppsett for å eliminere feil og finne stabiliteten.",
-   "sex": "M",
-   "id": null
+   "id": "F238713"
   },
   {
    "name": "Michelle Gisin",
