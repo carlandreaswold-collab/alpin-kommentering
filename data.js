@@ -321468,7 +321468,352 @@ window.ALPIN_DATA = {
    }
   ]
  },
- "generert": "2026-11-03 12:14",
+ "monitor": {
+  "oppdatert": "2026-11-03",
+  "panel": [
+   {
+    "tittel": "Karriereslutt",
+    "punkter": [
+     {
+      "fids": [
+       "149811"
+      ],
+      "dato": "2026-11-03",
+      "tekst": "Michelle Gisin legger opp (21 pall, 1 seier). Blir TV-ekspert under VM.",
+      "kilde": "SkinEWS",
+      "ids": [
+       "F149811"
+      ]
+     },
+     {
+      "fids": [
+       "125871"
+      ],
+      "dato": "2026-08-05",
+      "tekst": "Lara Gut-Behrami la opp i august (48 seirer, 101 pall).",
+      "kilde": "Sportschau",
+      "ids": [
+       "F125871"
+      ]
+     },
+     {
+      "fids": [
+       "106318"
+      ],
+      "dato": "2026-10-18",
+      "tekst": "Max Franz legger opp, 37 år (172 starter, 3 seirer).",
+      "kilde": "SkinEWS",
+      "ids": [
+       "F106318"
+      ]
+     },
+     {
+      "fids": [
+       "156781"
+      ],
+      "dato": "2026-09-15",
+      "tekst": "Christoph Krenn legger opp.",
+      "kilde": "SkinEWS",
+      "ids": [
+       "F156781"
+      ]
+     }
+    ]
+   },
+   {
+    "tittel": "Skader",
+    "punkter": [
+     {
+      "fids": [
+       "137380"
+      ],
+      "dato": "2026-10-15",
+      "tekst": "Kilde: akillessenen revet i Chile, ute hele sesongen.",
+      "kilde": "Ski Racing/ORF",
+      "ids": [
+       "F137380"
+      ]
+     },
+     {
+      "fids": [
+       "175637"
+      ],
+      "dato": "2026-10-19",
+      "tekst": "Grenier: ACL og menisk, operert.",
+      "kilde": "Ski Racing",
+      "ids": [
+       "K:valerie grenier"
+      ]
+     },
+     {
+      "fids": [
+       "188144"
+      ],
+      "dato": "2026-10-28",
+      "tekst": "Gallhuber: kneartroskopi, mister Levi/Gurgl/Killington.",
+      "kilde": "ORF",
+      "ids": [
+       "F188144"
+      ]
+     },
+     {
+      "fids": [],
+      "dato": "2026-09-26",
+      "tekst": "Camille Cerutti: mistanke om korsbåndskade, sesongen trolig over.",
+      "kilde": "SkinEWS",
+      "ids": []
+     },
+     {
+      "fids": [],
+      "dato": "2026-09-30",
+      "tekst": "Maja Waroschitz (20): ny skade.",
+      "kilde": "SkinEWS",
+      "ids": []
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-23",
+      "tekst": "Darbellay: tommelbrudd, uteblir fra Sölden.",
+      "kilde": "Neveitalia",
+      "ids": []
+     },
+     {
+      "fids": [
+       "222507"
+      ],
+      "dato": "2026-10-31",
+      "tekst": "Steen Olsen: kneproblemer, meldte forfall til Sölden GS.",
+      "kilde": "Neveitalia",
+      "ids": [
+       "F222507"
+      ]
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-15",
+      "tekst": "Cornelia Oehlund: hjernerystelse og skader i skulder og rygg etter fall, men klar for Sölden.",
+      "kilde": "Neveitalia",
+      "ids": []
+     }
+    ]
+   },
+   {
+    "tittel": "Comeback",
+    "punkter": [
+     {
+      "fids": [
+       "168809"
+      ],
+      "dato": "2026-11-01",
+      "tekst": "Vlhová: slalåm-comeback i Levi etter kneskade.",
+      "kilde": "Neveitalia",
+      "ids": [
+       "K:petra vlhova"
+      ]
+     },
+     {
+      "fids": [
+       "154653"
+      ],
+      "dato": "2026-11-02",
+      "tekst": "Sarrazin: tilbake etter 701 dager, sikter på Copper Mountain.",
+      "kilde": "Sportschau",
+      "ids": [
+       "F154653"
+      ]
+     },
+     {
+      "fids": [
+       "118379"
+      ],
+      "dato": "2026-11-03",
+      "tekst": "Brignone: går tilbake til Sci Club Courmayeur, i oppkjøring mot comeback.",
+      "kilde": "Neveitalia",
+      "ids": [
+       "K:federica brignone"
+      ]
+     },
+     {
+      "fids": [
+       "190907"
+      ],
+      "dato": "2026-10-17",
+      "tekst": "Liensberger: tilbake på ski etter 9,5 måneder.",
+      "kilde": "Neveitalia",
+      "ids": [
+       "F190907"
+      ]
+     },
+     {
+      "fids": [
+       "106332"
+      ],
+      "dato": "2026-10-29",
+      "tekst": "Hirscher (NED): wildcard bekreftet av FIS; vurderer Levi/Gurgl.",
+      "kilde": "SkinEWS",
+      "ids": [
+       "F106332"
+      ]
+     }
+    ]
+   },
+   {
+    "tittel": "Sölden-åpningen (24.–25.10, bekreftet mot FIS)",
+    "punkter": [
+     {
+      "fids": [
+       "155859",
+       "269077",
+       "237841"
+      ],
+      "dato": "2026-10-24",
+      "tekst": "Kvinner GS: 1 Moltzan, 2 Colturi (+0,01), 3 Aicher, 4 Hector, 5 Zenere. Shiffrin 7., Robinson 8., Scheib DNF i 1. omgang.",
+      "kilde": "FIS",
+      "ids": [
+       "K:paula moltzan",
+       "K:lara colturi",
+       "K:emma aicher"
+      ]
+     },
+     {
+      "fids": [
+       "213820",
+       "190231"
+      ],
+      "dato": "2026-10-25",
+      "tekst": "Menn GS: 1 Pinheiro Braathen, 2 Meillard, 3 Odermatt, 4 Radamus, 5 Haaser. Hystad 8., McGrath DNF i 2. omgang, Haugan ut i 1. omgang.",
+      "kilde": "FIS",
+      "ids": [
+       "M:lucas pinheiro braathen",
+       "M:marco odermatt"
+      ]
+     }
+    ]
+   },
+   {
+    "tittel": "Kalender og organisasjon",
+    "punkter": [
+     {
+      "fids": [],
+      "dato": "2026-10-29",
+      "tekst": "Kvinnenes fartsrenn flyttet fra Narvik til Kvitfjell (FIS bekreftet).",
+      "kilde": "VG/Neveitalia",
+      "ids": []
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-26",
+      "tekst": "Raimund Plancker ny FIS-rennsjef for herrenes verdenscup fra 1. november; Markus Waldner går av.",
+      "kilde": "Ski Racing/SkinEWS",
+      "ids": []
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-03",
+      "tekst": "VM 2027 avholdes i Crans-Montana.",
+      "kilde": "SkinEWS",
+      "ids": []
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-09",
+      "tekst": "Verdenscupfinalen 2027 er i Sun Valley.",
+      "kilde": "Ski Racing",
+      "ids": []
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-27",
+      "tekst": "Kvinnenes fartsstart er Beaver Creek 11.–13. desember.",
+      "kilde": "Neveitalia",
+      "ids": []
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-27",
+      "tekst": "Beaver Creek tar i bruk automatisert snøproduksjon til verdenscupen.",
+      "kilde": "Ski Racing",
+      "ids": []
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-13",
+      "tekst": "Zermatt sikter mot verdenscup-comeback i mars 2028 (Gornergrat).",
+      "kilde": "Ski Racing",
+      "ids": []
+     }
+    ]
+   },
+   {
+    "tittel": "Utstyr og team",
+    "punkter": [
+     {
+      "fids": [
+       "213820"
+      ],
+      "dato": "2026-10-21",
+      "tekst": "Braathen og Atomic forlenger til 2030.",
+      "kilde": "SkinEWS",
+      "ids": [
+       "M:lucas pinheiro braathen"
+      ]
+     },
+     {
+      "fids": [
+       "154950"
+      ],
+      "dato": "2026-10-19",
+      "tekst": "Kristoffersen bytter alt utstyr til HEAD.",
+      "kilde": "Ski Racing",
+      "ids": [
+       "M:henrik kristoffersen"
+      ]
+     },
+     {
+      "fids": [],
+      "dato": "2026-10-20",
+      "tekst": "Aksel Lund Svindal tilbake i Norges landslag som trener for tekniske herrer.",
+      "kilde": "Ski Racing",
+      "ids": []
+     },
+     {
+      "fids": [
+       "269077"
+      ],
+      "dato": "2026-10-22",
+      "tekst": "Colturi har fått ny trener.",
+      "kilde": "SkinEWS",
+      "ids": [
+       "K:lara colturi"
+      ]
+     },
+     {
+      "fids": [
+       "175637"
+      ],
+      "dato": "2026-10-14",
+      "tekst": "Grenier: trener Mauro Pini tilbake.",
+      "kilde": "Neveitalia",
+      "ids": [
+       "K:valerie grenier"
+      ]
+     },
+     {
+      "fids": [
+       "188568"
+      ],
+      "dato": "2026-09-29",
+      "tekst": "Peterlini bytter til HEAD.",
+      "kilde": "Ski Racing",
+      "ids": [
+       "F188568"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "generert": "2026-11-03 16:54",
  "athletes": [
   {
    "id": "K:zrinka ljutic",
@@ -327721,7 +328066,8 @@ window.ALPIN_DATA = {
      }
     }
    },
-   "fid": "213392"
+   "fid": "213392",
+   "pod": {}
   },
   {
    "id": "K:thea stjernesund",
@@ -332597,7 +332943,74 @@ window.ALPIN_DATA = {
      }
     }
    },
-   "fid": "127048"
+   "fid": "127048",
+   "pod": {
+    "2023": [
+     0,
+     1,
+     2
+    ],
+    "2022": [
+     0,
+     2,
+     1
+    ],
+    "2021": [
+     5,
+     0,
+     4
+    ],
+    "2020": [
+     6,
+     2,
+     0
+    ],
+    "2019": [
+     2,
+     2,
+     4
+    ],
+    "2018": [
+     2,
+     0,
+     2
+    ],
+    "2017": [
+     4,
+     1,
+     1
+    ],
+    "2016": [
+     6,
+     2,
+     0
+    ],
+    "2015": [
+     2,
+     2,
+     2
+    ],
+    "2014": [
+     3,
+     4,
+     1
+    ],
+    "2013": [
+     3,
+     1,
+     3
+    ],
+    "2012": [
+     1,
+     4,
+     1
+    ],
+    "2011": [
+     0,
+     1,
+     0
+    ]
+   }
   },
   {
    "id": "F48830",
@@ -332753,7 +333166,69 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2022": [
+     2,
+     1,
+     1
+    ],
+    "2021": [
+     1,
+     1,
+     1
+    ],
+    "2020": [
+     0,
+     0,
+     1
+    ],
+    "2019": [
+     1,
+     1,
+     2
+    ],
+    "2018": [
+     1,
+     3,
+     0
+    ],
+    "2017": [
+     3,
+     3,
+     1
+    ],
+    "2014": [
+     1,
+     0,
+     0
+    ],
+    "2013": [
+     0,
+     1,
+     3
+    ],
+    "2012": [
+     2,
+     0,
+     1
+    ],
+    "2011": [
+     3,
+     0,
+     0
+    ],
+    "2010": [
+     1,
+     0,
+     0
+    ],
+    "2009": [
+     1,
+     0,
+     0
+    ]
+   }
   },
   {
    "id": "F94808",
@@ -333572,7 +334047,69 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2018": [
+     0,
+     0,
+     1
+    ],
+    "2016": [
+     1,
+     1,
+     0
+    ],
+    "2015": [
+     1,
+     2,
+     0
+    ],
+    "2014": [
+     6,
+     2,
+     1
+    ],
+    "2013": [
+     6,
+     0,
+     2
+    ],
+    "2012": [
+     3,
+     1,
+     0
+    ],
+    "2011": [
+     3,
+     0,
+     1
+    ],
+    "2010": [
+     1,
+     2,
+     2
+    ],
+    "2009": [
+     1,
+     2,
+     1
+    ],
+    "2008": [
+     2,
+     1,
+     3
+    ],
+    "2007": [
+     0,
+     1,
+     1
+    ],
+    "2006": [
+     1,
+     1,
+     2
+    ]
+   }
   },
   {
    "id": "F70282",
@@ -333624,7 +334161,74 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2021": [
+     0,
+     0,
+     1
+    ],
+    "2020": [
+     1,
+     1,
+     0
+    ],
+    "2019": [
+     1,
+     2,
+     1
+    ],
+    "2018": [
+     2,
+     3,
+     2
+    ],
+    "2017": [
+     5,
+     1,
+     2
+    ],
+    "2016": [
+     4,
+     3,
+     1
+    ],
+    "2015": [
+     7,
+     3,
+     1
+    ],
+    "2014": [
+     2,
+     1,
+     0
+    ],
+    "2013": [
+     0,
+     0,
+     1
+    ],
+    "2012": [
+     1,
+     1,
+     3
+    ],
+    "2011": [
+     0,
+     2,
+     0
+    ],
+    "2010": [
+     0,
+     1,
+     1
+    ],
+    "2009": [
+     0,
+     0,
+     1
+    ]
+   }
   },
   {
    "id": "F21367",
@@ -333728,7 +334332,69 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2019": [
+     9,
+     4,
+     2
+    ],
+    "2018": [
+     13,
+     1,
+     2
+    ],
+    "2017": [
+     6,
+     9,
+     1
+    ],
+    "2016": [
+     8,
+     8,
+     3
+    ],
+    "2015": [
+     8,
+     4,
+     2
+    ],
+    "2014": [
+     5,
+     3,
+     5
+    ],
+    "2013": [
+     6,
+     10,
+     2
+    ],
+    "2012": [
+     9,
+     2,
+     3
+    ],
+    "2011": [
+     1,
+     2,
+     1
+    ],
+    "2010": [
+     2,
+     4,
+     0
+    ],
+    "2009": [
+     0,
+     0,
+     1
+    ],
+    "2008": [
+     0,
+     0,
+     2
+    ]
+   }
   },
   {
    "id": "F4588",
@@ -336185,7 +336851,39 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2019": [
+     2,
+     1,
+     0
+    ],
+    "2018": [
+     0,
+     2,
+     1
+    ],
+    "2017": [
+     1,
+     0,
+     0
+    ],
+    "2015": [
+     0,
+     1,
+     0
+    ],
+    "2014": [
+     0,
+     0,
+     1
+    ],
+    "2013": [
+     0,
+     1,
+     0
+    ]
+   }
   },
   {
    "id": "F17325",
@@ -338668,7 +339366,94 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2026": [
+     0,
+     0,
+     1
+    ],
+    "2025": [
+     3,
+     6,
+     1
+    ],
+    "2024": [
+     8,
+     4,
+     4
+    ],
+    "2023": [
+     3,
+     2,
+     4
+    ],
+    "2022": [
+     2,
+     2,
+     1
+    ],
+    "2021": [
+     6,
+     3,
+     1
+    ],
+    "2020": [
+     2,
+     0,
+     1
+    ],
+    "2019": [
+     0,
+     1,
+     1
+    ],
+    "2018": [
+     1,
+     2,
+     0
+    ],
+    "2017": [
+     5,
+     2,
+     2
+    ],
+    "2016": [
+     6,
+     4,
+     3
+    ],
+    "2015": [
+     2,
+     0,
+     0
+    ],
+    "2014": [
+     7,
+     1,
+     1
+    ],
+    "2013": [
+     1,
+     0,
+     1
+    ],
+    "2011": [
+     1,
+     1,
+     2
+    ],
+    "2009": [
+     1,
+     0,
+     1
+    ],
+    "2008": [
+     0,
+     0,
+     1
+    ]
+   }
   },
   {
    "id": "F117954",
@@ -339812,7 +340597,19 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2019": [
+     1,
+     0,
+     0
+    ],
+    "2018": [
+     1,
+     0,
+     0
+    ]
+   }
   },
   {
    "id": "F65206",
@@ -341047,7 +341844,49 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2024": [
+     0,
+     3,
+     3
+    ],
+    "2023": [
+     8,
+     2,
+     3
+    ],
+    "2022": [
+     7,
+     2,
+     0
+    ],
+    "2021": [
+     2,
+     0,
+     0
+    ],
+    "2020": [
+     1,
+     5,
+     1
+    ],
+    "2019": [
+     1,
+     0,
+     3
+    ],
+    "2017": [
+     0,
+     1,
+     2
+    ],
+    "2016": [
+     2,
+     1,
+     1
+    ]
+   }
   },
   {
    "id": "F163395",
@@ -341177,7 +342016,49 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2026": [
+     1,
+     0,
+     0
+    ],
+    "2025": [
+     0,
+     1,
+     1
+    ],
+    "2024": [
+     4,
+     2,
+     1
+    ],
+    "2023": [
+     0,
+     3,
+     0
+    ],
+    "2022": [
+     0,
+     2,
+     5
+    ],
+    "2021": [
+     2,
+     2,
+     0
+    ],
+    "2019": [
+     0,
+     2,
+     1
+    ],
+    "2018": [
+     0,
+     1,
+     0
+    ]
+   }
   },
   {
    "id": "F145321",
@@ -341398,7 +342279,44 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2024": [
+     0,
+     0,
+     2
+    ],
+    "2022": [
+     0,
+     0,
+     5
+    ],
+    "2021": [
+     1,
+     2,
+     3
+    ],
+    "2020": [
+     0,
+     0,
+     2
+    ],
+    "2019": [
+     0,
+     1,
+     1
+    ],
+    "2018": [
+     0,
+     2,
+     1
+    ],
+    "2017": [
+     0,
+     1,
+     0
+    ]
+   }
   },
   {
    "id": "F156607",
@@ -343556,7 +344474,8 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {}
   },
   {
    "id": "F167504",
@@ -343907,7 +344826,39 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2025": [
+     0,
+     2,
+     1
+    ],
+    "2024": [
+     0,
+     0,
+     1
+    ],
+    "2022": [
+     1,
+     1,
+     1
+    ],
+    "2021": [
+     2,
+     4,
+     2
+    ],
+    "2020": [
+     0,
+     0,
+     2
+    ],
+    "2019": [
+     0,
+     0,
+     1
+    ]
+   }
   },
   {
    "id": "F154778",
@@ -344401,7 +345352,29 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2025": [
+     0,
+     1,
+     0
+    ],
+    "2024": [
+     4,
+     2,
+     0
+    ],
+    "2020": [
+     0,
+     1,
+     0
+    ],
+    "2017": [
+     1,
+     0,
+     0
+    ]
+   }
   },
   {
    "id": "F187964",
@@ -344752,7 +345725,24 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2025": [
+     0,
+     1,
+     0
+    ],
+    "2024": [
+     0,
+     1,
+     0
+    ],
+    "2022": [
+     0,
+     1,
+     1
+    ]
+   }
   },
   {
    "id": "F196327",
@@ -345051,7 +346041,8 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {}
   },
   {
    "id": "F156292",
@@ -345961,7 +346952,8 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {}
   },
   {
    "id": "F188284",
@@ -346728,7 +347720,8 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {}
   },
   {
    "id": "F197739",
@@ -348054,7 +349047,24 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2025": [
+     2,
+     0,
+     1
+    ],
+    "2024": [
+     0,
+     1,
+     0
+    ],
+    "2023": [
+     1,
+     0,
+     0
+    ]
+   }
   },
   {
    "id": "F174540",
@@ -348418,7 +349428,14 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {
+    "2025": [
+     1,
+     1,
+     0
+    ]
+   }
   },
   {
    "id": "F204933",
@@ -349640,7 +350657,8 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {}
   },
   {
    "id": "F239209",
@@ -349705,7 +350723,8 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {}
   },
   {
    "id": "F254718",
@@ -351603,7 +352622,8 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {}
   },
   {
    "id": "F252076",
@@ -351616,7 +352636,8 @@ window.ALPIN_DATA = {
    "info": {},
    "notes": {},
    "news": null,
-   "results": {}
+   "results": {},
+   "pod": {}
   },
   {
    "id": "F163740",
@@ -358477,6 +359498,204 @@ window.ALPIN_DATA = {
    "text": "Bytter tilbake til sitt tidligere utstyrsoppsett for å eliminere feil og finne stabiliteten.",
    "sex": "M",
    "id": null
+  },
+  {
+   "name": "Michelle Gisin",
+   "date": "2026-11-03",
+   "source": "Alpin Monitor · SkinEWS/ORF/Neveitalia",
+   "text": "Legger opp 327 dager etter fallet. Var tilbake på «95 %», men ikke trygg på de siste fem prosentene; avgjørelsen tok hun i St. Moritz. Blir TV-ekspert under VM i Crans-Montana. Gift med Luca De Aliprandini. Karriere: 21 pall, 1 seier (slalåm Semmering 2020).",
+   "sex": "K",
+   "id": "F149811",
+   "monitor": true
+  },
+  {
+   "name": "Lara Gut",
+   "date": "2026-10-30",
+   "source": "Alpin Monitor · Ski Racing/Tages-Anzeiger",
+   "text": "La opp i august. Sier det ville kostet for mange måneders oppofringer å komme tilbake, og at hjemme-VM i Crans-Montana ikke fristet. Karriere: 48 seirer, 101 pall.",
+   "sex": "K",
+   "id": "F125871",
+   "monitor": true
+  },
+  {
+   "name": "Cyprien Sarrazin",
+   "date": "2026-11-02",
+   "source": "Alpin Monitor · Sportschau/Neveitalia",
+   "text": "Comeback etter 701 dager, to år etter skrekkfallet på Bormio-treningen i desember 2024. «99 % sikker» på start i Copper Mountain; avgjør kvelden før hvert renn om han er klar.",
+   "sex": "M",
+   "id": "F154653",
+   "monitor": true
+  },
+  {
+   "name": "Aleksander Aamodt Kilde",
+   "date": "2026-10-31",
+   "source": "Alpin Monitor · Neveitalia/ORF/VG",
+   "text": "Revet akillessenen i treningsfall i Chile 15. oktober; ute hele sesongen. Kommer knapt tre år etter kneskaden i Wengen (januar 2023). Svindal er tilbake i landslaget som trener for tekniske herrer.",
+   "sex": "M",
+   "id": "F137380",
+   "monitor": true
+  },
+  {
+   "name": "Federica Brignone",
+   "date": "2026-11-03",
+   "source": "Alpin Monitor · Neveitalia",
+   "text": "Forlater Carabinieri og går tilbake til hjemmeklubben Sci Club Courmayeur. Er i oppkjøring mot ny comeback-sesong etter skaden.",
+   "sex": "K",
+   "id": "K:federica brignone",
+   "monitor": true
+  },
+  {
+   "name": "Lindsey Vonn",
+   "date": "2026-10-28",
+   "source": "Alpin Monitor · Neveitalia",
+   "text": "Klar for det hun kaller sin siste operasjon (skruer og plater i venstre tibia, pluss korsbåndet), under to uker unna. «Mentalt tøff nedtelling».",
+   "sex": "K",
+   "id": "K:lindsey vonn",
+   "monitor": true
+  },
+  {
+   "name": "Petra Vlhova",
+   "date": "2026-11-01",
+   "source": "Alpin Monitor · Neveitalia/SVT",
+   "text": "Trener på Pitztal-breen og sikter mot slalåm-comeback i Levi om under to uker, etter å ha mistet store deler av forrige sesong med kneskade.",
+   "sex": "K",
+   "id": "K:petra vlhova",
+   "monitor": true
+  },
+  {
+   "name": "Marcel Hirscher",
+   "date": "2026-10-29",
+   "source": "Alpin Monitor · Neveitalia/SkinEWS",
+   "text": "Står over åpningsrennet i Sölden; vurderer de to første slalåmrennene (Levi, Gurgl). Kjører for Nederland etter å ha representert Østerrike 2007–2019. FIS har bekreftet wildcard.",
+   "sex": "M",
+   "id": "F106332",
+   "monitor": true
+  },
+  {
+   "name": "Lucas Pinheiro Braathen",
+   "date": "2026-10-25",
+   "source": "Alpin Monitor · Sportschau/Ski Racing",
+   "text": "Vant storslalåm i Sölden foran Meillard og Odermatt, tredje GS-seier på rad. Forlenget samarbeidet med Atomic til 2030 (21.10).",
+   "sex": "M",
+   "id": "M:lucas pinheiro braathen",
+   "monitor": true
+  },
+  {
+   "name": "Paula Moltzan",
+   "date": "2026-10-30",
+   "source": "Alpin Monitor · Ski Racing/ORF",
+   "text": "Første verdenscupseier i Sölden GS 24.10, 0,01 foran Colturi, etter 5. plass i 1. omgang. Pall nr. 11 i karrieren.",
+   "sex": "K",
+   "id": "K:paula moltzan",
+   "monitor": true
+  },
+  {
+   "name": "Lara Colturi",
+   "date": "2026-11-03",
+   "source": "Alpin Monitor · Neveitalia/SkinEWS",
+   "text": "2. i Sölden, ett hundredel bak Moltzan. Har fått ny trener (22.10).",
+   "sex": "K",
+   "id": "K:lara colturi",
+   "monitor": true
+  },
+  {
+   "name": "Valerie Grenier",
+   "date": "2026-10-24",
+   "source": "Alpin Monitor · Ski Racing/Neveitalia",
+   "text": "Operert for ACL og menisk etter skade under Sölden-trening; ikke første gang med ACL. Trener Mauro Pini er tilbake som personlig trener.",
+   "sex": "K",
+   "id": "K:valerie grenier",
+   "monitor": true
+  },
+  {
+   "name": "Katharina Gallhuber",
+   "date": "2026-10-28",
+   "source": "Alpin Monitor · ORF/SkinEWS",
+   "text": "Kneartroskopi: mister Levi, Gurgl og Killington.",
+   "sex": "K",
+   "id": "F188144",
+   "monitor": true
+  },
+  {
+   "name": "Katharina Liensberger",
+   "date": "2026-10-18",
+   "source": "Alpin Monitor · ORF/Neveitalia",
+   "text": "Tilbake på ski etter ni og en halv måneds pause.",
+   "sex": "K",
+   "id": "F190907",
+   "monitor": true
+  },
+  {
+   "name": "Max Franz",
+   "date": "2026-10-18",
+   "source": "Alpin Monitor · SkinEWS/ORF",
+   "text": "Legger opp, 37 år. 172 verdenscupstarter, 3 seirer. Skadet i begge legger i Copper Mountain i 2022 og kom aldri tilbake til toppen.",
+   "sex": "M",
+   "id": "F106318",
+   "monitor": true
+  },
+  {
+   "name": "Henrik Kristoffersen",
+   "date": "2026-10-19",
+   "source": "Alpin Monitor · Ski Racing",
+   "text": "Bytter ski, binding og støvel til HEAD samtidig, første gang i karrieren. 102 pall, 34 seirer.",
+   "sex": "M",
+   "id": "M:henrik kristoffersen",
+   "monitor": true
+  },
+  {
+   "name": "Marco Odermatt",
+   "date": "2026-10-25",
+   "source": "Alpin Monitor · SkinEWS/Ski Racing",
+   "text": "3. i Sölden GS. 54 verdenscupseirer; kom til åpningen som forsvarende vinner og jager sjette strake verdenscuptittel.",
+   "sex": "M",
+   "id": "M:marco odermatt",
+   "monitor": true
+  },
+  {
+   "name": "Julia Scheib",
+   "date": "2026-10-24",
+   "source": "Alpin Monitor · SVT/ORF",
+   "text": "Krasjet ut i 1. omgang i Sölden (DNF1) som forsvarende mester.",
+   "sex": "K",
+   "id": "K:julia scheib",
+   "monitor": true
+  },
+  {
+   "name": "Mikaela Shiffrin",
+   "date": "2026-10-24",
+   "source": "Alpin Monitor · Ski Racing/Neveitalia",
+   "text": "Raskest i 1. omgang i Sölden, endte på 7. plass. Kutter ned på slalåm denne sesongen for å prioritere GS og super-G.",
+   "sex": "K",
+   "id": "K:mikaela shiffrin",
+   "monitor": true
+  },
+  {
+   "name": "Marco Schwarz",
+   "date": "2026-10-06",
+   "source": "Alpin Monitor · Neveitalia/SkinEWS",
+   "text": "Dropper slalåm fremover: «en veldig vanskelig beslutning».",
+   "sex": "M",
+   "id": "M:marco schwarz",
+   "monitor": true
+  },
+  {
+   "name": "Ryan Cochran-Siegle",
+   "date": "2026-11-02",
+   "source": "Alpin Monitor · Neveitalia",
+   "text": "Trekkes frem som en mulig stor overraskelse i sesongen etter å ha jobbet seg tilbake i fartsdisiplinene.",
+   "sex": "M",
+   "id": "M:ryan cochran-siegle",
+   "monitor": true
+  },
+  {
+   "name": "Franjo von Allmen",
+   "date": "2026-10-30",
+   "source": "Alpin Monitor · SkinEWS",
+   "text": "Tildelt «Skieur d'Or»; har tre OL-gull. Debatt om VM-formatet.",
+   "sex": "M",
+   "id": "M:franjo von allmen",
+   "monitor": true
   }
  ],
  "medals": [

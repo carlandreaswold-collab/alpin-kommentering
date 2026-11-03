@@ -54,6 +54,7 @@ textarea{width:100%;min-height:70px;background:#0e1a3d;color:var(--tx);border:1p
 svg.spark{width:100%;height:auto;display:block;margin-top:6px}
 .spk-ctl{display:flex;align-items:center;gap:10px;margin:4px 0}.spk-ctl .note{flex:1;text-align:center}.spk-ctl button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}.spk-ctl button:hover{background:var(--acc);color:#04202e}
 .spk-box{display:flex;margin-top:4px}.spk-axis{flex:none}.spk-scroll{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;cursor:grab;scrollbar-color:#4a5f9a transparent}.spk-scroll.drar{cursor:grabbing;user-select:none}.spk-scroll svg{display:block}
+.nytt .box{margin-top:10px}.mnm{color:var(--gul);cursor:pointer;margin-right:4px}
 .more{margin-top:8px;background:var(--panel);color:var(--acc);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
 .karriere{margin:8px 0;padding:8px 10px;background:#0e1a3d;border:1px solid #6b5a1d;border-radius:8px}.karriere summary{cursor:pointer;color:var(--acc);margin-top:4px}
 .stat.big2 b{font-size:26px}.stat b.gul{color:var(--gul)}
@@ -107,8 +108,8 @@ function seg(el, opts, cur, fn){
 function chrome(){
   seg(sSex, SEX, S.sex, k=>{S.sex=k;S.id=null;S.rid=null;render()});
   seg(sDisc, DISC, S.disc, k=>{S.disc=k;S.id=null;S.rid=null;render()});
-  seg(sTab, {kort:'Startkort', arkiv:'Resultater', medalje:'OL / VM'}, S.tab, k=>{S.tab=k;render()});
-  sDisc.style.display = S.tab==='medalje' ? 'none' : '';
+  seg(sTab, {kort:'Startkort', arkiv:'Resultater', medalje:'OL / VM', nytt:'Sesongstart'}, S.tab, k=>{S.tab=k;render()});
+  sDisc.style.display = (S.tab==='medalje'||S.tab==='nytt') ? 'none' : '';
   dl.innerHTML = D.athletes.filter(a=>a.sex===S.sex).map(a=>`<option value="${esc(a.name)}">`).join('');
 }
 
@@ -235,7 +236,7 @@ function kort(){
   if(i<0 && !(a && a.sex===S.sex)){ if(!L.length) return '<div class="card">Ingen startliste for dette valget.</div>'; i=0; a=L[0]; }
   const onList = i>=0;
   S.id=a.id; save();
-  const feed = D.feed.filter(f=>f.id===a.id && f.text!==a.news);
+  const feed = D.feed.filter(f=>f.id===a.id && f.text!==a.news).sort((p,q)=>String(q.date||'').localeCompare(String(p.date||'')));
   const note = localStorage.getItem(noteKey(a))||'';
   const prevNote = a.notes[S.disc];
   const nxt = onList ? L.slice(i+1,i+4) : [];
@@ -319,9 +320,17 @@ function medalje(){
     <p class="note">Full resultatliste fra FIS. Lagkonkurranser og parallell er ikke med. Klikk en rad for å åpne kortet.</p>`:'<p class="note">Ingen mesterskapsdata.</p>'}
   </div>`;
 }
+function nytt(){
+  const M=D.monitor; if(!M) return '<div class="card">Ingen monitordata.</div>';
+  const nm=id=>{const a=byId[id];return a?`<a class="mnm" data-id="${a.id}">${esc(a.name)}</a>`:''};
+  return `<div class="card nytt"><h2 style="margin:0 0 4px">Sesongstart 2026/27: endringer i sirkuset</h2>
+    <p class="note">Fra Alpin Monitor, oppdatert ${esc(M.oppdatert)}. Resultater fra Sölden er sjekket mot FIS. Klikk et navn for å åpne kortet.</p>
+    ${M.panel.map(s=>`<div class="box"><h3>${esc(s.tittel)}</h3>${s.punkter.slice().sort((p,q)=>q.dato.localeCompare(p.dato)).map(p=>`<div class="feed"><small>${esc(p.dato)} · ${esc(p.kilde)}</small><br>${esc(p.tekst)}${p.ids.length?' <small>→ '+p.ids.map(nm).join(', ')+'</small>':''}</div>`).join('')}</div>`).join('')}
+  </div>`;
+}
 function render(){
   chrome(); save();
-  app.innerHTML = S.tab==='kort'?kort():S.tab==='arkiv'?arkiv():medalje();
+  app.innerHTML = S.tab==='kort'?kort():S.tab==='arkiv'?arkiv():S.tab==='nytt'?nytt():medalje();
   if(S.tab==='arkiv'){ const ss=[...new Set(((D.wc&&D.wc.races)||[]).map(r=>r.season))].sort().reverse(); seg(document.getElementById('sSeason'),Object.fromEntries(ss.map(x=>[x,'Sesong '+x])),S.season,k=>{S.season=k;S.rid=null;render()}); }
   const nt=document.getElementById('nt');
   if(nt){ const a=byId[S.id]; nt.oninput=()=>localStorage.setItem(noteKey(a),nt.value); }
