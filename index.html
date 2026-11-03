@@ -123,9 +123,18 @@ const started = x => !NOTSTART.has(x.v);
 // Verdenscup fra FIS: oppslag per FIS-id
 const wcBy = {}, fidToAth = {};
 D.athletes.forEach(a=>{ if(a.fid) fidToAth[a.fid]=a; });
-if(D.wc) D.wc.races.forEach(r=>r.res.forEach(([fid,v])=>(wcBy[fid]=wcBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.place,v,wc:true})));
+// Tider fra FIS: res-rad = [fid, plass, sluttid, omg1, omg2] i hundredeler. Vinner- og toerertid per renn for differanser.
+function prep(r){ const w=r.res.find(x=>x[1]===1&&x.length>2), s2=r.res.find(x=>x[1]===2&&x.length>2); r._w=w?w[2]:null; r._s=s2?s2[2]:null; r._hasT=r.res.some(x=>x.length>2); }
+if(D.wc){ D.wc.races.forEach(prep); (D.wc.champs||[]).forEach(prep); }
+const fmt = t => { if(t==null) return ''; const m=Math.floor(t/6000), s=t%6000, ss=String(Math.floor(s/100)).padStart(m?2:1,'0'), cc=String(s%100).padStart(2,'0'); return (m?m+':':'')+ss+','+cc; };
+const fdiff = d => d==null?'':(d===0?'+0,00':'+'+fmt(d));
+const tAfter = x => (x.t!=null && x.w!=null && x.v>1) ? x.t-x.w : null;        // tid bak vinneren
+const tMargin = x => (x.v===1 && x.t!=null && x.s!=null) ? x.s-x.t : null;      // seiersmargin til nr. 2
+const timeHead = r => r&&r._hasT ? `<th class="r">Tid</th><th class="r">Bak</th>${r.res.some(x=>x.length>4)?'<th class="r">1. omg.</th><th class="r">2. omg.</th>':''}` : '';
+const timeCells = (x,r) => r&&r._hasT ? `<td class="r">${fmt(x.t)}</td><td class="r">${x.v===1?'':fdiff(x.t!=null&&r._w!=null?x.t-r._w:null)}</td>${r.res.some(y=>y.length>4)?`<td class="r">${fmt(x.r1)}</td><td class="r">${fmt(x.r2)}</td>`:''}` : '';
+if(D.wc) D.wc.races.forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.place,v,wc:true,t,r1,r2,w:r._w,s:r._s})));
 const chBy = {};
-if(D.wc) (D.wc.champs||[]).forEach(r=>r.res.forEach(([fid,v])=>(chBy[fid]=chBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.champ+' '+r.year,v,wc:true,champ:true})));
+if(D.wc) (D.wc.champs||[]).forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(chBy[fid]=chBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.champ+' '+r.year,v,wc:true,champ:true,t,r1,r2,w:r._w,s:r._s})));
 const resCache = {};
 // Alle resultater for en utøver, eldst først. FIS (verdenscup) når utøveren er koblet, ellers arkene.
 // OL/VM kommer alltid fra arkene dine (finnes ikke i verdenscupdataene).
@@ -184,18 +193,20 @@ function spark(a){
     const x=X(i).toFixed(1), col=hue(p.season);
     const lab=`<text transform="translate(${x},${H-B+12}) rotate(55)" fill="${col}" font-size="11">${esc(raceLabel(p))}</text>`;
     if(num(p.v)){const y=Y(p.v).toFixed(1);
-      return `<circle cx="${x}" cy="${y}" r="5" fill="${col}" stroke="#0b1630" stroke-width="1.5"/><text x="${x}" y="${y-9}" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">${p.v}</text>${lab}`}
+      const RING={1:'#ffd700',2:'#d4dbe6',3:'#cd7f32'}, pod=p.v<=3;   // pall: ring i gull / sølv / bronse rundt prikken
+      return `${pod?`<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="${RING[p.v]}" stroke-width="3.5"><title>${p.v}. plass · ${esc(raceLabel(p))} ${esc(p.date||'')}</title></circle>`:''}<circle cx="${x}" cy="${y}" r="5" fill="${col}" stroke="#0b1630" stroke-width="1.5"/><text x="${x}" y="${y-(pod?15:9)}" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">${p.v}</text>${lab}`}
     return `<text x="${x}" y="${H-B-4}" fill="#ff6b6b" font-size="11" font-weight="700" text-anchor="middle">${esc(String(p.v).replace(/^DNF\d$/,'DNF'))}</text>${lab}`;
   }).join('');
   const sesonger=[...new Set(pts.map(p=>p.season))];
-  return `<div class="spk"><div class="spk-ctl"><button type="button" data-sp="-1" aria-label="Bakover i tid">◀ Eldre</button><span class="note">${n} renn i ${DISC[S.disc].toLowerCase()}, ${sesonger.length} sesonger (${sesonger[0]}–${sesonger[sesonger.length-1]}). Dra eller scroll sidelengs.</span><button type="button" data-sp="1" aria-label="Fremover i tid">Nyere ▶</button></div>
+  return `<div class="spk"><div class="spk-ctl"><button type="button" data-sp="-1" aria-label="Bakover i tid">◀ Eldre</button><span class="note">${n} renn i ${DISC[S.disc].toLowerCase()}, ${sesonger.length} sesonger (${sesonger[0]}–${sesonger[sesonger.length-1]}). Dra eller scroll sidelengs. Ring: <b style="color:#ffd700">gull</b> · <b style="color:#d4dbe6">sølv</b> · <b style="color:#cd7f32">bronse</b> = pallplass.</span><button type="button" data-sp="1" aria-label="Fremover i tid">Nyere ▶</button></div>
   <div class="spk-box"><svg class="spk-axis" width="${AX}" height="${H}" viewBox="0 0 ${AX} ${H}">${axis}</svg>
   <div class="spk-scroll"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${bands}${grid}<path d="${d}" fill="none" stroke="#cfd8f0" stroke-opacity=".75" stroke-width="2"/>${dots}</svg></div></div>
   <div class="note"><b>Øverst = 1. plass</b>, lenger ned = dårligere (skala til venstre, nederst 30+). Hver sesong har sin farge og sitt bånd; ${NOW} er gul. Rød tekst = utgått / ikke kvalifisert.</div></div>`;
 }
 function medalRow(p){
   const cls=p.v===1?'p1':'pod', ic=p.v===1?'🥇':p.v===2?'🥈':'🥉';
-  return `<div class="chip ${cls}"><b>${ic} ${p.v}.</b><i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?p.date:p.season}</i></div>`;
+  const mg=tMargin(p), af=tAfter(p), tm = mg!=null ? `vant med ${fmt(mg)}` : af!=null ? `+${fmt(af)} bak vinneren` : '';
+  return `<div class="chip ${cls}"><b>${ic} ${p.v}.</b>${tm?`<i style="color:var(--tx)">${tm}</i>`:''}<i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?p.date:p.season}</i></div>`;
 }
 function stats(a){
   const all=results(a).filter(started);
@@ -227,7 +238,7 @@ function stats(a){
   <div class="disc">Pallplasser i verdenscupen, alle disipliner (${scope==='total'?'alle sesonger i dataene':scope})</div>
   ${pods.length?`<div class="chips">${pods.slice(0,S.allPods?999:12).map(medalRow).join('')}</div>${pods.length>12?`<button class="more" data-allpods="1">${S.allPods?'Vis bare de 12 siste':'Vis alle '+pods.length+' pallplasser'}</button>`:''}`:'<div class="note">Ingen verdenscuppallplasser i dette utvalget.</div>'}
   ${ch.length?`<div class="disc">OL/VM-medaljer</div><div class="chips">${ch.map(medalRow).join('')}</div>`:''}
-  ${scope==='total'?`<div class="note" style="margin-top:6px">${wcSrc?'Renn for renn fra FIS, sesongene 2009/10 og nyere. Karrieretallet over (FIS) dekker hele karrieren. OL fra 2018 og VM fra 2019.':'Ikke koblet til FIS-data: tallene bygger på arkene dine.'}</div>`:''}`;
+  ${scope==='total'?`<div class="note" style="margin-top:6px">${wcSrc?'Renn for renn fra FIS, sesongene 2009/10 og nyere. Karrieretallet over (FIS) dekker hele karrieren. OL fra 2010 og VM fra 2011.':'Ikke koblet til FIS-data: tallene bygger på arkene dine.'}</div>`:''}`;
 }
 function startnr(a){ return (a.start[NOW]||{})[S.disc]; }
 function kort(){
@@ -237,7 +248,7 @@ function kort(){
   const onList = i>=0;
   S.id=a.id; save();
   const feed = D.feed.filter(f=>f.id===a.id && f.text!==a.news).sort((p,q)=>String(q.date||'').localeCompare(String(p.date||'')));
-  const note = localStorage.getItem(noteKey(a))||'';
+  const note = localStorage.getItem(noteKey(a)) || (a.alias||[]).map(id=>localStorage.getItem('alpinNote:'+id+':'+S.disc)).find(Boolean) || '';   // gamle id-er fra sammenslåtte kort
   const prevNote = a.notes[S.disc];
   const nxt = onList ? L.slice(i+1,i+4) : [];
   const res = results(a).filter(x=>grp(x.disc)===S.disc);
@@ -286,16 +297,16 @@ function arkiv(){
   const list=all.filter(r=>r.sex===S.sex&&(grp(r.disc)===S.disc||((r.disc==='CE'||r.disc==='PAR')&&S.disc==='SL'))&&r.season===S.season).sort((p,q)=>p.date<q.date?-1:1);
   let r=list.find(x=>x.id===S.rid)||list[list.length-1];
   if(r) S.rid=r.id;
-  const rows=r?r.res.map(([fid,v])=>({a:fidToAth[fid],v})).filter(x=>x.a):[];
+  const rows=r?r.res.map(([fid,v,t,r1,r2])=>({a:fidToAth[fid],v,t,r1,r2})).filter(x=>x.a):[];
   rows.sort((p,q)=>{const pn=num(p.v),qn=num(q.v); return pn&&qn?p.v-q.v : pn?-1 : qn?1 : String(p.v).localeCompare(String(q.v))});
   const lbl=x=>`${x.place}${grp(x.disc)==='FART'?' '+x.disc:''}${x.disc==='CE'?' city':''}${x.disc==='PAR'?' paral.':''} · ${x.date.slice(8)}.${x.date.slice(5,7)}`;
   return `<div class="card arkiv">
     <div class="seg" id="sSeason"></div>
     <div class="races">${list.map(x=>`<button class="${r&&x.id===r.id?'on':''}" data-r="${x.id}">${esc(lbl(x))}</button>`).join('')||'<span class="note">Ingen renn.</span>'}</div>
     ${r?`<h2 style="margin:6px 0">${esc(r.place)} (${esc(r.nat)}) · ${DSHORT[r.disc]} · ${SEX[S.sex]} · ${r.date}</h2>
-    <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th><th class="r">Startnr ${NOW}</th></tr>
-    ${rows.map(x=>`<tr class="go" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td><td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
-    <p class="note">Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk en rad for å åpne kortet.</p>`:''}
+    <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}<th class="r">Startnr ${NOW}</th></tr>
+    ${rows.map(x=>`<tr class="go" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}<td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
+    <p class="note">${r.par?'Parallellrenn (utslag): FIS har ingen sluttider. ':''}Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk en rad for å åpne kortet.</p>`:''}
   </div>`;
 }
 const CD = {SL:'Slalåm', GS:'Storslalåm', SG:'Super-G', DH:'Utfor', AC:'Kombinasjon'};
@@ -307,7 +318,7 @@ function medalje(){
   const ds=Object.keys(CD).filter(d=>inCh.some(r=>r.disc===d));
   if(!ds.includes(S.cd)) S.cd=ds[0];
   const r=inCh.find(x=>x.disc===S.cd);
-  const rows=r?r.res.map(([fid,v])=>({a:fidToAth[fid],v})).filter(x=>x.a):[];
+  const rows=r?r.res.map(([fid,v,t,r1,r2])=>({a:fidToAth[fid],v,t,r1,r2})).filter(x=>x.a):[];
   rows.sort((p,q)=>{const pn=num(p.v),qn=num(q.v); return pn&&qn?p.v-q.v : pn?-1 : qn?1 : String(p.v).localeCompare(String(q.v))});
   const medals=rows.filter(x=>num(x.v)&&x.v<=3);
   return `<div class="card arkiv">
@@ -315,8 +326,8 @@ function medalje(){
     <div class="races">${ds.map(d=>`<button data-cd="${d}" class="${d===S.cd?'on':''}">${CD[d]}</button>`).join('')}</div>
     ${r?`<h2 style="margin:6px 0">${S.ch} · ${CD[S.cd]} · ${SEX[S.sex]} · ${esc(r.place)} (${esc(r.nat)}) · ${r.date}</h2>
     <div class="chips" style="margin-bottom:10px">${medals.map(x=>`<div class="chip ${x.v===1?'p1':'pod'}" style="font-size:15px"><b>${x.v===1?'🥇':x.v===2?'🥈':'🥉'} ${esc(x.a.name)}</b><i>${esc(x.a.land||'')}</i></div>`).join('')}</div>
-    <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th></tr>
-    ${rows.map(x=>`<tr class="go" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td></tr>`).join('')}</table>
+    <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}</tr>
+    ${rows.map(x=>`<tr class="go" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}</tr>`).join('')}</table>
     <p class="note">Full resultatliste fra FIS. Lagkonkurranser og parallell er ikke med. Klikk en rad for å åpne kortet.</p>`:'<p class="note">Ingen mesterskapsdata.</p>'}
   </div>`;
 }
