@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alpin kommentering</title>
+<style>
+:root{--bg:#0b1630;--panel:#122046;--panel2:#18295a;--line:#243666;--tx:#eef2fb;--mut:#9aa8cc;--acc:#4fc3f7;--gul:#ffd54f;--grn:#66d98a;--red:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:5;background:#08112a;border-bottom:1px solid var(--line);padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+h1{font-size:16px;margin:0 8px 0 0;letter-spacing:.3px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:transparent;color:var(--mut);border:0;padding:6px 12px;font:inherit;cursor:pointer}
+.seg button.on{background:var(--acc);color:#04202e;font-weight:600}
+input[type=search]{background:var(--panel);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:6px 10px;font:inherit;min-width:180px}
+.sp{flex:1}
+main{padding:12px;max-width:1500px;margin:auto}
+.layout{display:grid;grid-template-columns:240px 1fr;gap:12px}
+.list{background:var(--panel);border:1px solid var(--line);border-radius:10px;max-height:calc(100vh - 110px);overflow:auto;position:sticky;top:60px}
+.list .it{display:flex;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:1px solid #1a2a58;align-items:baseline}
+.list .it:hover{background:var(--panel2)}
+.list .it.on{background:var(--acc);color:#04202e;font-weight:600}
+.list .it.next:not(.on){border-left:3px solid var(--gul)}
+.list .nr{width:28px;text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+.list .it.on .nr{color:#04202e}
+.list .lnd{margin-left:auto;font-size:12px;color:var(--mut)}
+.list .it.on .lnd{color:#04202e}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.big{font-size:56px;font-weight:800;color:var(--gul);line-height:1;min-width:70px;font-variant-numeric:tabular-nums}
+.nm{font-size:30px;font-weight:700;line-height:1.1}
+.sub{color:var(--mut);margin-top:2px}
+.nav{margin-left:auto;display:flex;gap:6px}
+.nav button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:10px 16px;font:inherit;font-size:16px;cursor:pointer}
+.nav button:hover{background:var(--acc);color:#04202e}
+.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:12px;margin-top:14px}
+.box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
+.box h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--acc)}
+.box.nyhet{border-color:#6b5a1d}.box.nyhet h3{color:var(--gul)}
+.box p{margin:0 0 6px;white-space:pre-wrap}
+.feed{border-top:1px solid var(--line);padding-top:6px;margin-top:6px;font-size:14px}
+.feed small{color:var(--mut)}
+.mine{font-size:16px}
+textarea{width:100%;min-height:70px;background:#0e1a3d;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{border-radius:6px;padding:3px 7px;background:#0e1a3d;border:1px solid var(--line);font-size:13px;text-align:center}
+.chip b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+.chip i{display:block;font-style:normal;font-size:10px;color:var(--mut);white-space:nowrap}
+.chip.p1{background:#6b5a1d;border-color:var(--gul)}.chip.pod{background:#2a3d63;border-color:#8fb3ff}.chip.t10 b{color:var(--grn)}
+.chip.st b{color:var(--red);font-size:13px}
+.wide{grid-column:1/-1}
+.disc{margin:8px 0 2px;color:var(--mut);font-size:12px}
+svg.spark{width:100%;height:auto;display:block;margin-top:6px}
+.spk-ctl{display:flex;align-items:center;gap:10px;margin:4px 0}.spk-ctl .note{flex:1;text-align:center}.spk-ctl button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}.spk-ctl button:hover{background:var(--acc);color:#04202e}
+.spk-box{display:flex;margin-top:4px}.spk-axis{flex:none}.spk-scroll{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;cursor:grab;scrollbar-color:#4a5f9a transparent}.spk-scroll.drar{cursor:grabbing;user-select:none}.spk-scroll svg{display:block}
+.more{margin-top:8px;background:var(--panel);color:var(--acc);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
+.karriere{margin:8px 0;padding:8px 10px;background:#0e1a3d;border:1px solid #6b5a1d;border-radius:8px}.karriere summary{cursor:pointer;color:var(--acc);margin-top:4px}
+.stat.big2 b{font-size:26px}.stat b.gul{color:var(--gul)}
+#sScope{margin-bottom:6px}#sScope button.on{background:var(--gul);color:#2a2000}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px}
+.stat div{font-size:13px;color:var(--mut)}.stat b{display:block;font-size:20px;color:var(--tx)}
+.upnext{margin-top:12px;color:var(--mut);font-size:14px}.upnext a{color:var(--gul);cursor:pointer;margin-right:14px}
+table{border-collapse:collapse;width:100%}
+td,th{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--mut);font-weight:500;font-size:12px}
+td.r{text-align:right;font-variant-numeric:tabular-nums}
+tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
+.arkiv .races{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.arkiv .races button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
+.arkiv .races button.on{background:var(--acc);color:#04202e;font-weight:600}
+.note{color:var(--mut);font-size:13px}
+@media(max-width:820px){.layout{grid-template-columns:1fr}.list{position:static;max-height:170px}.grid{grid-template-columns:1fr}.big{font-size:44px}.nm{font-size:24px}.nav{width:100%}.nav button{flex:1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⛷ Alpin kommentering</h1>
+  <div class="seg" id="sSex"></div>
+  <div class="seg" id="sDisc"></div>
+  <div class="seg" id="sTab"></div>
+  <span class="sp"></span>
+  <input type="search" id="q" placeholder="Søk utøver…  ( / )" list="dl" autocomplete="off">
+  <datalist id="dl"></datalist>
+</header>
+<main id="app"></main>
+<script src="data.js"></script>
+<script>
+const D = window.ALPIN_DATA;
+const SEX = {K:'Kvinner', M:'Menn'};
+const DISC = {SL:'Slalåm', GS:'Storslalåm', FART:'Fart (SG/DH)'};
+const NOW = '26/27', PREV = '25/26';
+const S = Object.assign({sex:'M', disc:'SL', tab:'kort', id:null, race:null, season:NOW}, JSON.parse(localStorage.getItem('alpinState')||'{}'));
+const byId = Object.fromEntries(D.athletes.map(a=>[a.id,a]));
+const esc = s => String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const save = () => localStorage.setItem('alpinState', JSON.stringify(S));
+const noteKey = (a)=>'alpinNote:'+a.id+':'+S.disc;
+
+function startList(){
+  return D.athletes.filter(a=>a.sex===S.sex && a.start[NOW] && a.start[NOW][S.disc]!=null)
+    .sort((a,b)=>a.start[NOW][S.disc]-b.start[NOW][S.disc]);
+}
+function seg(el, opts, cur, fn){
+  el.innerHTML = Object.entries(opts).map(([k,v])=>`<button data-k="${k}" class="${k===cur?'on':''}">${v}</button>`).join('');
+  el.onclick = e=>{const k=e.target.dataset.k; if(k) fn(k)};
+}
+function chrome(){
+  seg(sSex, SEX, S.sex, k=>{S.sex=k;S.id=null;S.rid=null;render()});
+  seg(sDisc, DISC, S.disc, k=>{S.disc=k;S.id=null;S.rid=null;render()});
+  seg(sTab, {kort:'Startkort', arkiv:'Resultater', medalje:'OL / VM'}, S.tab, k=>{S.tab=k;render()});
+  sDisc.style.display = S.tab==='medalje' ? 'none' : '';
+  dl.innerHTML = D.athletes.filter(a=>a.sex===S.sex).map(a=>`<option value="${esc(a.name)}">`).join('');
+}
+
+const num = v => typeof v==='number';
+const grp = d => (d==='SL'||d==='GS') ? d : (d==='SG'||d==='DH'||d==='FART') ? 'FART' : d;
+const DSHORT = {SL:'SL', GS:'GS', SG:'SG', DH:'DH', FART:'Fart', PAR:'Parallell', AC:'Komb.', CE:'City event'};
+const CHAMP_DATE = {'24/25':'2025-02-10','25/26':'2026-02-15','26/27':'2027-02-10'};
+const OLVM = /^(OL|VM)/;
+const NOTSTART = new Set(['x','Avlyst','DNS','skadet']);
+const started = x => !NOTSTART.has(x.v);
+// Verdenscup fra FIS: oppslag per FIS-id
+const wcBy = {}, fidToAth = {};
+D.athletes.forEach(a=>{ if(a.fid) fidToAth[a.fid]=a; });
+if(D.wc) D.wc.races.forEach(r=>r.res.forEach(([fid,v])=>(wcBy[fid]=wcBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.place,v,wc:true})));
+const chBy = {};
+if(D.wc) (D.wc.champs||[]).forEach(r=>r.res.forEach(([fid,v])=>(chBy[fid]=chBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.champ+' '+r.year,v,wc:true,champ:true})));
+const resCache = {};
+// Alle resultater for en utøver, eldst først. FIS (verdenscup) når utøveren er koblet, ellers arkene.
+// OL/VM kommer alltid fra arkene dine (finnes ikke i verdenscupdataene).
+function results(a){
+  if(resCache[a.id]) return resCache[a.id];
+  const hasWc = !!(a.fid && (wcBy[a.fid]||chBy[a.fid]));
+  const out = hasWc ? [...(wcBy[a.fid]||[]), ...(chBy[a.fid]||[])] : [];
+  for(const season of Object.keys(a.results)) for(const disc of Object.keys(a.results[season])){
+    const names=D.races[`${a.sex}|${disc}|${season}`]||[];
+    const r=a.results[season][disc];
+    names.forEach(n=>{
+      if(r[n]===undefined) return;
+      const champ=OLVM.test(n);
+      if(hasWc) return;   // FIS dekker både verdenscup og OL/VM
+      out.push({date: champ?(CHAMP_DATE[season]||'9999'):'', season, disc, race:n, v:r[n], champ});
+    });
+  }
+  if(hasWc) out.sort((p,q)=>p.date<q.date?-1:p.date>q.date?1:0);
+  return resCache[a.id]=out;
+}
+const raceLabel = x => x.race + (x.wc && (grp(x.disc)==='FART'||x.disc==='CE'||x.disc==='PAR') ? ' '+DSHORT[x.disc] : '');
+function chip(x){
+  const v=x.v; let cls='chip', txt=v;
+  if(v===1) cls+=' p1'; else if(num(v)&&v<=3) cls+=' pod'; else if(num(v)&&v<=10) cls+=' t10'; else if(!num(v)) cls+=' st';
+  if(!num(v)) txt = String(v).replace(/^DNF\d$/,'DNF');
+  return `<div class="${cls}" title="${esc(x.date||'')}"><b>${esc(txt)}</b><i>${esc(raceLabel(x))}${x.date&&x.wc?' · '+x.date.slice(5).replace('-','.'):''}</i></div>`;
+}
+function spark(a){
+  const pts=results(a).filter(x=>grp(x.disc)===S.disc && started(x));
+  const n=pts.length;
+  if(n<2) return '<div class="note">For få resultater til formkurve.</div>';
+  const STEP=46, H=282, L=10, R=20, T=34, B=104, cap=30, AX=34;
+  const W=L+R+(n-1)*STEP;
+  const X=i=>L+i*STEP, Y=v=>T+(Math.min(v,cap)-1)/(cap-1)*(H-T-B);
+  // Fast farge per sesong (samme sesong får samme farge hos alle utøvere); inneværende sesong er gul
+  const PAL=['#4fc3f7','#b388ff','#66d98a','#ff9f6b'];
+  const hue=se=>se===NOW?'#ffd54f':PAL[(parseInt(se.slice(0,2),10)||0)%PAL.length];
+  const gridV=[1,5,10,20,30];
+  const grid=gridV.map(v=>`<line x1="0" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="${v===10?'#4a5f9a':'#243666'}" ${v===10?'':'stroke-dasharray="2 4"'}/>`).join('');
+  const axis=gridV.map(v=>`<text x="${AX-6}" y="${Y(v)+4}" fill="#9aa8cc" font-size="12" text-anchor="end">${v===30?'30+':v}</text>`).join('');
+  // sesongbånd
+  let bands='', i0=0;
+  for(let i=1;i<=n;i++){
+    if(i===n||pts[i].season!==pts[i0].season){
+      const se=pts[i0].season, c=hue(se), x1=i0===0?0:X(i0-.5), x2=i===n?W:X(i-.5);
+      bands+=`<rect x="${x1}" y="0" width="${x2-x1}" height="${H-B}" fill="${c}" opacity="${se===NOW?.14:.09}"/>`
+        +`<rect x="${x1}" y="0" width="${x2-x1}" height="4" fill="${c}"/>`
+        +(i0>0?`<line x1="${x1}" x2="${x1}" y1="0" y2="${H-B}" stroke="${c}" stroke-opacity=".7" stroke-dasharray="4 3"/>`:'')
+        +`<text x="${x1+6}" y="${T-12}" fill="${c}" font-size="13" font-weight="700">${se}</text>`;
+      i0=i;
+    }
+  }
+  let d='',pen=false;
+  pts.forEach((p,i)=>{ if(num(p.v)){d+=(pen?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1);pen=true} else pen=false });
+  const dots=pts.map((p,i)=>{
+    const x=X(i).toFixed(1), col=hue(p.season);
+    const lab=`<text transform="translate(${x},${H-B+12}) rotate(55)" fill="${col}" font-size="11">${esc(raceLabel(p))}</text>`;
+    if(num(p.v)){const y=Y(p.v).toFixed(1);
+      return `<circle cx="${x}" cy="${y}" r="5" fill="${col}" stroke="#0b1630" stroke-width="1.5"/><text x="${x}" y="${y-9}" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">${p.v}</text>${lab}`}
+    return `<text x="${x}" y="${H-B-4}" fill="#ff6b6b" font-size="11" font-weight="700" text-anchor="middle">${esc(String(p.v).replace(/^DNF\d$/,'DNF'))}</text>${lab}`;
+  }).join('');
+  const sesonger=[...new Set(pts.map(p=>p.season))];
+  return `<div class="spk"><div class="spk-ctl"><button type="button" data-sp="-1" aria-label="Bakover i tid">◀ Eldre</button><span class="note">${n} renn i ${DISC[S.disc].toLowerCase()}, ${sesonger.length} sesonger (${sesonger[0]}–${sesonger[sesonger.length-1]}). Dra eller scroll sidelengs.</span><button type="button" data-sp="1" aria-label="Fremover i tid">Nyere ▶</button></div>
+  <div class="spk-box"><svg class="spk-axis" width="${AX}" height="${H}" viewBox="0 0 ${AX} ${H}">${axis}</svg>
+  <div class="spk-scroll"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${bands}${grid}<path d="${d}" fill="none" stroke="#cfd8f0" stroke-opacity=".75" stroke-width="2"/>${dots}</svg></div></div>
+  <div class="note"><b>Øverst = 1. plass</b>, lenger ned = dårligere (skala til venstre, nederst 30+). Hver sesong har sin farge og sitt bånd; ${NOW} er gul. Rød tekst = utgått / ikke kvalifisert.</div></div>`;
+}
+function medalRow(p){
+  const cls=p.v===1?'p1':'pod', ic=p.v===1?'🥇':p.v===2?'🥈':'🥉';
+  return `<div class="chip ${cls}"><b>${ic} ${p.v}.</b><i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?p.date:p.season}</i></div>`;
+}
+function stats(a){
+  const all=results(a).filter(started);
+  const seasons=[...new Set(all.filter(x=>!x.champ).map(x=>x.season))].sort();
+  const scope=(S.scope==='total'||S.scope===PREV)?S.scope:NOW;   // gamle lagrede verdier ('sesong') faller tilbake til inneværende sesong
+  const inScope = scope==='total'? all : all.filter(x=>x.season===scope);
+  const wc=inScope.filter(x=>!x.champ), ch=inScope.filter(x=>x.champ&&num(x.v)&&x.v<=3);
+  const ns=wc.filter(x=>num(x.v)).map(x=>x.v);
+  const pods=wc.filter(x=>num(x.v)&&x.v<=3).sort((p,q)=>(q.date||'').localeCompare(p.date||'')||p.v-q.v);
+  const wins=pods.filter(x=>x.v===1).length, t10=ns.filter(v=>v<=10).length;
+  const dnf=wc.filter(x=>typeof x.v==='string'&&/^(DNF|DQ)/i.test(x.v)).length;
+  const best=ns.length?Math.min(...ns):'–';
+  const snitt=ns.length?(ns.reduce((s,v)=>s+v,0)/ns.length).toFixed(1):'–';
+  const btn=(k,t)=>`<button data-sc="${k}" class="${scope===k?'on':''}">${t}</button>`;
+  const knapper=`<div class="seg" id="sScope">${btn(NOW,'Sesongen '+NOW)}${btn(PREV,'Sist sesong '+PREV)}${btn('total','Totalt ('+(seasons[0]||NOW)+'–'+NOW+')')}</div>`;
+  const wcSrc = a.fid && wcBy[a.fid];
+  const sl = c => `${+c-1}/${String(c).slice(2)}`;   // FIS-sesongkode 2026 = 2025/26
+  let karriere='';
+  if(a.pod){
+    const ss=Object.keys(a.pod).sort(), tot=ss.reduce((t,k)=>t.map((x,i)=>x+a.pod[k][i]),[0,0,0]);
+    const sum=tot[0]+tot[1]+tot[2];
+    karriere = sum? `<div class="karriere"><b>Hele karrieren (verdenscup, FIS): ${sum} pallplasser</b> · ${tot[0]} seiere · ${tot[1]} andreplasser · ${tot[2]} tredjeplasser · første pall ${sl(ss[0])}
+      <details><summary>Per sesong</summary><div class="chips">${ss.map(k=>`<div class="chip ${a.pod[k][0]?'p1':'pod'}"><b>${a.pod[k][0]+a.pod[k][1]+a.pod[k][2]}</b><i>${sl(k)} · ${a.pod[k].join('-')}</i></div>`).join('')}</div><div class="note">Tall per sesong: 1.-2.-3. plass.</div></details></div>`
+      : '<div class="karriere note">Ingen verdenscuppallplasser i karrieren (FIS).</div>';
+  }
+  return `${knapper}
+  ${karriere}
+  <div class="stat big2"><div><b class="gul">${pods.length}</b>pallplasser</div><div><b>${wins}</b>seiere</div><div><b>${t10}</b>topp 10</div><div><b>${best}</b>beste plass</div><div><b>${snitt}</b>snitt (i mål)</div><div><b>${dnf}</b>utgått</div><div><b>${ns.length}/${wc.length}</b>i mål / start</div>${ch.length?`<div><b>${ch.length}</b>OL/VM-pall</div>`:''}</div>
+  <div class="disc">Pallplasser i verdenscupen, alle disipliner (${scope==='total'?'alle sesonger i dataene':scope})</div>
+  ${pods.length?`<div class="chips">${pods.slice(0,S.allPods?999:12).map(medalRow).join('')}</div>${pods.length>12?`<button class="more" data-allpods="1">${S.allPods?'Vis bare de 12 siste':'Vis alle '+pods.length+' pallplasser'}</button>`:''}`:'<div class="note">Ingen verdenscuppallplasser i dette utvalget.</div>'}
+  ${ch.length?`<div class="disc">OL/VM-medaljer</div><div class="chips">${ch.map(medalRow).join('')}</div>`:''}
+  ${scope==='total'?`<div class="note" style="margin-top:6px">${wcSrc?'Renn for renn fra FIS, sesongene 2009/10 og nyere. Karrieretallet over (FIS) dekker hele karrieren. OL fra 2018 og VM fra 2019.':'Ikke koblet til FIS-data: tallene bygger på arkene dine.'}</div>`:''}`;
+}
+function startnr(a){ return (a.start[NOW]||{})[S.disc]; }
+function kort(){
+  const L = startList();
+  let a = byId[S.id]; let i = L.findIndex(x=>x.id===S.id);
+  if(i<0 && !(a && a.sex===S.sex)){ if(!L.length) return '<div class="card">Ingen startliste for dette valget.</div>'; i=0; a=L[0]; }
+  const onList = i>=0;
+  S.id=a.id; save();
+  const feed = D.feed.filter(f=>f.id===a.id && f.text!==a.news);
+  const note = localStorage.getItem(noteKey(a))||'';
+  const prevNote = a.notes[S.disc];
+  const nxt = onList ? L.slice(i+1,i+4) : [];
+  const res = results(a).filter(x=>grp(x.disc)===S.disc);
+  const chips = (season)=>{
+    const r=res.filter(x=>x.season===season);
+    return r.length? `<div class="chips">${r.map(chip).join('')}</div>` : '<div class="note">Ingen resultater.</div>';
+  };
+  const otherDisc = Object.keys(a.start[NOW]||{}).filter(d=>d!==S.disc);
+  const nr = startnr(a);
+  const html = `
+  <div class="layout">
+   <div class="list" id="lst">${L.map((x,j)=>`<div class="it ${j===i?'on':''} ${onList&&j>i&&j<=i+3?'next':''}" data-id="${x.id}"><span class="nr">${x.start[NOW][S.disc]}</span><span>${esc(x.name)}</span><span class="lnd">${esc(x.land||'')}</span></div>`).join('')}</div>
+   <div class="card">
+    <div class="top">
+      <div class="big">${nr??'–'}</div>
+      <div><div class="nm">${esc(a.name)}</div><div class="sub">${esc(a.land||'')}${a.alder?' · '+a.alder+' år':''} · ${DISC[S.disc]}${nr==null?' · <span style="color:var(--gul)">ikke på startlisten '+NOW+' i denne disiplinen</span>':''}${otherDisc.length?' · kjører også '+otherDisc.map(d=>`<a href="#" data-d="${d}" style="color:var(--acc)">${DISC[d].split(' ')[0]}</a>`).join(', '):''}</div></div>
+      <div class="nav"><button id="bp">◀</button><button id="bn">▶</button></div>
+    </div>
+    <div class="grid">
+      <div class="box nyhet"><h3>Siste nytt</h3>
+        ${a.news?`<p>${esc(a.news)}</p>`:'<div class="note">Ingen nyhet i arket.</div>'}
+        ${feed.map(f=>`<div class="feed"><small>${esc(f.date||'')} · ${esc(f.source||'')}</small><br>${esc(f.text)}</div>`).join('')}
+      </div>
+      <div class="box mine"><h3>Mine notater (fra ${PREV})</h3>
+        ${prevNote?`<p>${esc(prevNote)}</p>`:'<div class="note">Ingen notater fra sist sesong i denne disiplinen.</div>'}
+      </div>
+      <div class="box"><h3>Om utøveren</h3>
+        ${a.info[S.disc]?`<p>${esc(a.info[S.disc])}</p>`:'<div class="note">Ingen info i arket.</div>'}
+      </div>
+      <div class="box"><h3>Nye notater (lagres automatisk)</h3>
+        <textarea id="nt" placeholder="Skriv noe du vil ha med neste gang…">${esc(note)}</textarea>
+      </div>
+      <div class="box wide"><h3>Pallplasser og statistikk</h3>${stats(a)}</div>
+      <div class="box wide"><h3>Formkurve (${DISC[S.disc]})</h3>${spark(a)}</div>
+      <div class="box wide"><h3>Sesongen ${NOW}</h3>${chips(NOW)}<div class="disc">Sist sesong ${PREV}</div>${chips(PREV)}</div>
+    </div>
+    <div class="upnext">Neste: ${nxt.map(x=>`<a data-id="${x.id}">${x.start[NOW][S.disc]} ${esc(x.name)} (${esc(x.land||'')})</a>`).join('')||'–'}</div>
+   </div>
+  </div>`;
+  return html;
+}
+function arkiv(){
+  const all=(D.wc&&D.wc.races)||[];
+  const seasons=[...new Set(all.map(r=>r.season))].sort().reverse();
+  if(!seasons.includes(S.season)) S.season=seasons[0];
+  const list=all.filter(r=>r.sex===S.sex&&(grp(r.disc)===S.disc||((r.disc==='CE'||r.disc==='PAR')&&S.disc==='SL'))&&r.season===S.season).sort((p,q)=>p.date<q.date?-1:1);
+  let r=list.find(x=>x.id===S.rid)||list[list.length-1];
+  if(r) S.rid=r.id;
+  const rows=r?r.res.map(([fid,v])=>({a:fidToAth[fid],v})).filter(x=>x.a):[];
+  rows.sort((p,q)=>{const pn=num(p.v),qn=num(q.v); return pn&&qn?p.v-q.v : pn?-1 : qn?1 : String(p.v).localeCompare(String(q.v))});
+  const lbl=x=>`${x.place}${grp(x.disc)==='FART'?' '+x.disc:''}${x.disc==='CE'?' city':''}${x.disc==='PAR'?' paral.':''} · ${x.date.slice(8)}.${x.date.slice(5,7)}`;
+  return `<div class="card arkiv">
+    <div class="seg" id="sSeason"></div>
+    <div class="races">${list.map(x=>`<button class="${r&&x.id===r.id?'on':''}" data-r="${x.id}">${esc(lbl(x))}</button>`).join('')||'<span class="note">Ingen renn.</span>'}</div>
+    ${r?`<h2 style="margin:6px 0">${esc(r.place)} (${esc(r.nat)}) · ${DSHORT[r.disc]} · ${SEX[S.sex]} · ${r.date}</h2>
+    <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th><th class="r">Startnr ${NOW}</th></tr>
+    ${rows.map(x=>`<tr class="go" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td><td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
+    <p class="note">Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk en rad for å åpne kortet.</p>`:''}
+  </div>`;
+}
+const CD = {SL:'Slalåm', GS:'Storslalåm', SG:'Super-G', DH:'Utfor', AC:'Kombinasjon'};
+function medalje(){
+  const all=((D.wc&&D.wc.champs)||[]).filter(r=>r.sex===S.sex);
+  const keys=[...new Set(all.map(r=>r.champ+' '+r.year))].sort((p,q)=>q.slice(3)-p.slice(3));
+  if(!keys.includes(S.ch)) S.ch=keys[0];
+  const inCh=all.filter(r=>r.champ+' '+r.year===S.ch);
+  const ds=Object.keys(CD).filter(d=>inCh.some(r=>r.disc===d));
+  if(!ds.includes(S.cd)) S.cd=ds[0];
+  const r=inCh.find(x=>x.disc===S.cd);
+  const rows=r?r.res.map(([fid,v])=>({a:fidToAth[fid],v})).filter(x=>x.a):[];
+  rows.sort((p,q)=>{const pn=num(p.v),qn=num(q.v); return pn&&qn?p.v-q.v : pn?-1 : qn?1 : String(p.v).localeCompare(String(q.v))});
+  const medals=rows.filter(x=>num(x.v)&&x.v<=3);
+  return `<div class="card arkiv">
+    <div class="seg" id="sCh">${keys.map(k=>`<button data-ch="${k}" class="${k===S.ch?'on':''}">${k}</button>`).join('')}</div>
+    <div class="races">${ds.map(d=>`<button data-cd="${d}" class="${d===S.cd?'on':''}">${CD[d]}</button>`).join('')}</div>
+    ${r?`<h2 style="margin:6px 0">${S.ch} · ${CD[S.cd]} · ${SEX[S.sex]} · ${esc(r.place)} (${esc(r.nat)}) · ${r.date}</h2>
+    <div class="chips" style="margin-bottom:10px">${medals.map(x=>`<div class="chip ${x.v===1?'p1':'pod'}" style="font-size:15px"><b>${x.v===1?'🥇':x.v===2?'🥈':'🥉'} ${esc(x.a.name)}</b><i>${esc(x.a.land||'')}</i></div>`).join('')}</div>
+    <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th></tr>
+    ${rows.map(x=>`<tr class="go" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td></tr>`).join('')}</table>
+    <p class="note">Full resultatliste fra FIS. Lagkonkurranser og parallell er ikke med. Klikk en rad for å åpne kortet.</p>`:'<p class="note">Ingen mesterskapsdata.</p>'}
+  </div>`;
+}
+function render(){
+  chrome(); save();
+  app.innerHTML = S.tab==='kort'?kort():S.tab==='arkiv'?arkiv():medalje();
+  if(S.tab==='arkiv'){ const ss=[...new Set(((D.wc&&D.wc.races)||[]).map(r=>r.season))].sort().reverse(); seg(document.getElementById('sSeason'),Object.fromEntries(ss.map(x=>[x,'Sesong '+x])),S.season,k=>{S.season=k;S.rid=null;render()}); }
+  const nt=document.getElementById('nt');
+  if(nt){ const a=byId[S.id]; nt.oninput=()=>localStorage.setItem(noteKey(a),nt.value); }
+  const l=document.querySelector('.list .it.on'); if(l) l.scrollIntoView({block:'center'});
+  document.querySelectorAll('.spk-scroll').forEach(e=>{ e.scrollLeft=e.scrollWidth; });   // formkurven starter ved de nyeste rennene
+}
+function step(d){
+  const L=startList(); if(!L.length) return;
+  let i=L.findIndex(a=>a.id===S.id); i=Math.max(0,Math.min(L.length-1,i+d)); S.id=L[i].id; render();
+}
+// dra formkurven sidelengs med musa
+let drag=null;
+app.addEventListener('pointerdown',e=>{ const sc=e.target.closest('.spk-scroll'); if(!sc||e.pointerType==='touch') return; drag={sc,x:e.clientX,l:sc.scrollLeft}; sc.classList.add('drar'); });
+window.addEventListener('pointermove',e=>{ if(drag) drag.sc.scrollLeft=drag.l-(e.clientX-drag.x); });
+window.addEventListener('pointerup',()=>{ if(drag){ drag.sc.classList.remove('drar'); drag=null; } });
+app.addEventListener('click',e=>{
+  const sp=e.target.closest('[data-sp]'); if(sp){ const sc=app.querySelector('.spk-scroll'); if(sc) sc.scrollBy({left:+sp.dataset.sp*sc.clientWidth*0.8,behavior:'smooth'}); return; }
+  const dd=e.target.closest('[data-d]'); if(dd){e.preventDefault();S.disc=dd.dataset.d;render();return}
+  if(e.target.closest('[data-allpods]')){S.allPods=!S.allPods;render();return}
+  const chb=e.target.closest('[data-ch]'); if(chb){S.ch=chb.dataset.ch;render();return}
+  const cdb=e.target.closest('[data-cd]'); if(cdb){S.cd=cdb.dataset.cd;render();return}
+  const sc=e.target.closest('[data-sc]'); if(sc){S.scope=sc.dataset.sc;render();return}
+  if(e.target.id==='bp') return step(-1);
+  if(e.target.id==='bn') return step(1);
+  const it=e.target.closest('[data-id]'); if(it){ S.id=it.dataset.id; const a=byId[S.id]; S.sex=a.sex;
+    S.tab='kort'; render(); return }
+  const r=e.target.closest('[data-r]'); if(r){S.rid=r.dataset.r;render()}
+});
+document.addEventListener('keydown',e=>{
+  const t=e.target.tagName;
+  if(e.key==='/' && t!=='INPUT' && t!=='TEXTAREA'){e.preventDefault();q.focus();return}
+  if(t==='INPUT'||t==='TEXTAREA'||S.tab!=='kort') return;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='PageDown'){e.preventDefault();step(1)}
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();step(-1)}
+});
+q.addEventListener('change',()=>{
+  const v=q.value.trim().toLowerCase(); if(!v) return;
+  const c=D.athletes.filter(a=>a.sex===S.sex&&a.name.toLowerCase().includes(v));
+  const a=c.find(a=>a.name.toLowerCase()===v)||c[0]; if(!a) return;
+  if(startnr(a)==null){ const d=Object.keys(a.start[NOW]||{})[0]; if(d) S.disc=d; }
+  S.id=a.id;S.tab='kort';q.value='';q.blur();render()
+});
+render();
+</script>
+</body>
+</html>
