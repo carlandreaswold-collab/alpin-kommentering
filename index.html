@@ -66,6 +66,14 @@ table{border-collapse:collapse;width:100%}
 td,th{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left}
 th{color:var(--mut);font-weight:500;font-size:12px}
 td.r{text-align:right;font-variant-numeric:tabular-nums}
+/* resultattabeller: sluttid og tid bak er tydeligst, omgangstider dempet; pall og annenhver rad fremhevet */
+td.tid,th.tid{color:#fff;font-weight:700;background:rgba(79,195,247,.14);border-left:1px solid var(--line)}
+th.tid{color:var(--acc)}
+td.bak,th.bak{color:var(--gul);font-weight:600;background:rgba(255,213,79,.10);border-right:1px solid var(--line)}
+td.omg,th.omg{color:var(--mut);font-size:13px}
+.arkiv table tr:nth-child(even) td:not(.tid):not(.bak){background:rgba(255,255,255,.03)}
+.arkiv table tr.p1 td:first-child{box-shadow:inset 4px 0 #ffd700}.arkiv table tr.p2 td:first-child{box-shadow:inset 4px 0 #d4dbe6}.arkiv table tr.p3 td:first-child{box-shadow:inset 4px 0 #cd7f32}
+.arkiv table tr.p1 td.tid{background:rgba(255,215,0,.22)}
 tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
 .arkiv .races{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .arkiv .races button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
@@ -130,8 +138,8 @@ const fmt = t => { if(t==null) return ''; const m=Math.floor(t/6000), s=t%6000, 
 const fdiff = d => d==null?'':(d===0?'+0,00':'+'+fmt(d));
 const tAfter = x => (x.t!=null && x.w!=null && x.v>1) ? x.t-x.w : null;        // tid bak vinneren
 const tMargin = x => (x.v===1 && x.t!=null && x.s!=null) ? x.s-x.t : null;      // seiersmargin til nr. 2
-const timeHead = r => r&&r._hasT ? `<th class="r">Tid</th><th class="r">Bak</th>${r.res.some(x=>x.length>4)?'<th class="r">1. omg.</th><th class="r">2. omg.</th>':''}` : '';
-const timeCells = (x,r) => r&&r._hasT ? `<td class="r">${fmt(x.t)}</td><td class="r">${x.v===1?'':fdiff(x.t!=null&&r._w!=null?x.t-r._w:null)}</td>${r.res.some(y=>y.length>4)?`<td class="r">${fmt(x.r1)}</td><td class="r">${fmt(x.r2)}</td>`:''}` : '';
+const timeHead = r => r&&r._hasT ? `<th class="r tid">Sluttid</th><th class="r bak">Bak</th>${r.res.some(x=>x.length>4)?'<th class="r omg">1. omg.</th><th class="r omg">2. omg.</th>':''}` : '';
+const timeCells = (x,r) => r&&r._hasT ? `<td class="r tid">${fmt(x.t)}</td><td class="r bak">${x.v===1?'':fdiff(x.t!=null&&r._w!=null?x.t-r._w:null)}</td>${r.res.some(y=>y.length>4)?`<td class="r omg">${fmt(x.r1)}</td><td class="r omg">${fmt(x.r2)}</td>`:''}` : '';
 if(D.wc) D.wc.races.forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.place,v,wc:true,t,r1,r2,w:r._w,s:r._s})));
 const chBy = {};
 if(D.wc) (D.wc.champs||[]).forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(chBy[fid]=chBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.champ+' '+r.year,v,wc:true,champ:true,t,r1,r2,w:r._w,s:r._s})));
@@ -305,7 +313,7 @@ function arkiv(){
     <div class="races">${list.map(x=>`<button class="${r&&x.id===r.id?'on':''}" data-r="${x.id}">${esc(lbl(x))}</button>`).join('')||'<span class="note">Ingen renn.</span>'}</div>
     ${r?`<h2 style="margin:6px 0">${esc(r.place)} (${esc(r.nat)}) · ${DSHORT[r.disc]} · ${SEX[S.sex]} · ${r.date}</h2>
     <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}<th class="r">Startnr ${NOW}</th></tr>
-    ${rows.map(x=>`<tr class="go" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}<td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
+    ${rows.map(x=>`<tr class="go${x.v>=1&&x.v<=3?' p'+x.v:''}" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}<td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
     <p class="note">${r.par?'Parallellrenn (utslag): FIS har ingen sluttider. ':''}Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk en rad for å åpne kortet.</p>`:''}
   </div>`;
 }
@@ -327,7 +335,7 @@ function medalje(){
     ${r?`<h2 style="margin:6px 0">${S.ch} · ${CD[S.cd]} · ${SEX[S.sex]} · ${esc(r.place)} (${esc(r.nat)}) · ${r.date}</h2>
     <div class="chips" style="margin-bottom:10px">${medals.map(x=>`<div class="chip ${x.v===1?'p1':'pod'}" style="font-size:15px"><b>${x.v===1?'🥇':x.v===2?'🥈':'🥉'} ${esc(x.a.name)}</b><i>${esc(x.a.land||'')}</i></div>`).join('')}</div>
     <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}</tr>
-    ${rows.map(x=>`<tr class="go" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}</tr>`).join('')}</table>
+    ${rows.map(x=>`<tr class="go${x.v>=1&&x.v<=3?' p'+x.v:''}" data-id="${x.a.id}"><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}</tr>`).join('')}</table>
     <p class="note">Full resultatliste fra FIS. Lagkonkurranser og parallell er ikke med. Klikk en rad for å åpne kortet.</p>`:'<p class="note">Ingen mesterskapsdata.</p>'}
   </div>`;
 }
