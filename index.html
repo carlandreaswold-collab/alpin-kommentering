@@ -38,10 +38,11 @@ main{padding:12px;max-width:1500px;margin:auto}
 .box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
 .box h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--acc)}
 .box.nyhet{border-color:#6b5a1d}.box.nyhet h3{color:var(--gul)}
+.box.fakta{border-color:#2f6b4f}.box.fakta h3{color:#6fe3a8}.box.fakta ul{margin:6px 0 0;padding-left:18px}.box.fakta li{margin:0 0 5px}.box.fakta select{background:#0e1a3d;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:2px 4px;margin-left:6px;font:inherit;font-size:13px;text-transform:none;letter-spacing:0}.box.fakta .fs{font-size:11px;color:var(--mut,#8fa0c8);margin-top:6px}
 .box p{margin:0 0 6px;white-space:pre-wrap}
 .feed{border-top:1px solid var(--line);padding-top:6px;margin-top:6px;font-size:14px}
 .feed small{color:var(--mut)}
-.mine{font-size:16px;grid-row:span 2;display:flex;flex-direction:column}
+.mine{font-size:16px;grid-row:span 3;display:flex;flex-direction:column}
 .mine textarea{flex:1;min-height:340px;font-size:16px;line-height:1.45}
 textarea{width:100%;min-height:70px;background:#0e1a3d;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;resize:vertical}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
@@ -110,7 +111,7 @@ tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
   <datalist id="dl"></datalist>
 </header>
 <main id="app"></main>
-<script src="data.js?v=20261114090529"></script>
+<script src="data.js?v=20261114091842"></script>
 <script>
 const D = window.ALPIN_DATA;
 const SEX = {K:'Kvinner', M:'Menn'};
@@ -647,6 +648,19 @@ function useImport(){
   if(rest.length){ IMP={open:true,queue:rest}; nextImport(); return; }   // neste fil i køen
   render();
 }
+function faktaBox(a){
+  const g=S.disc, key=S.sex+'|'+g, st=(D.steder||{})[key]||{steder:[],neste:null};
+  S.ven=S.ven||{};
+  const ven = S.ven[key] || st.neste;
+  const F = a.fakta||{};
+  const vf = ((F.v||{})[g]||{})[ven]||[];
+  const gf = (F.g||{})[g]||[];
+  const li = z=>`<li title="${esc(z[2]||'')}">${esc(z[1])}</li>`;
+  const opts = st.steder.map(p=>`<option ${p===ven?'selected':''}>${esc(p)}</option>`).join('');
+  return `<div class="box fakta"><h3>Resultat-fakta · ${DISC[g]}${st.steder.length?`<select id="fven" title="Velg bakke">${opts}</select>`:''}</h3>
+    ${vf.length||gf.length?`<ul>${vf.slice(0,4).map(li).join('')}${gf.slice(0,3).map(li).join('')}</ul>`:'<div class="note">Ingen fakta funnet for denne utøveren/bakken.</div>'}
+    <div class="fs">Regnet av FIS-resultatene (verdenscup siden 2009/10). Hold musepekeren over en linje for kilde. Omgangsfakta gjelder siste tre sesonger.</div></div>`;
+}
 function kort(){
   const L = startList();
   let a = byId[S.id]; let i = L.findIndex(x=>x.id===S.id);
@@ -692,6 +706,7 @@ function kort(){
       <div class="box"><h3>Om utøveren</h3>
         ${a.info[S.disc]?`<p>${esc(a.info[S.disc])}</p>`:'<div class="note">Ingen info i arket.</div>'}
       </div>
+      ${faktaBox(a)}
       <div class="box wide"><h3>Formkurve (${DISC[S.disc]})</h3>${spark(a)}</div>
       <div class="box wide"><h3>Pallplasser og statistikk</h3>${stats(a)}</div>
       <div class="box wide"><h3>Sesongen ${NOW}</h3>${chips(NOW)}<div class="disc">Sist sesong ${PREV}</div>${chips(PREV)}</div>
@@ -780,7 +795,7 @@ app.addEventListener('change',e=>{
   if(e.target.id==='ilabel'){ IMP.label=e.target.value; IMP.labelEdited=true; return; }
   if(e.target.id==='pfile'){ const fs=[...e.target.files]; if(fs.length) importFiles(fs); return; }
   if(e.target.id==='iforce'){ document.getElementById('iuse').disabled=!e.target.checked; return; }
-  if(e.target.id==='bfile'){ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ try{ const r=applyBackup(JSON.parse(t)); alert(`Hentet inn: ${r.lister} nye lister, ${r.notater} notater`+(r.konflikter?`. ${r.konflikter} notater ble ikke overskrevet fordi du har skrevet noe nytt der.`:'.')); localStorage.setItem('alpinBackupT',String(Date.now())); render(); }catch(err){ alert('Kunne ikke hente inn: '+err.message); } }); return; } if(e.target.id==='lsel'){ S.src=S.src||{}; S.src[S.sex+S.disc]=e.target.value; S.id=null; render(); } });
+  if(e.target.id==='bfile'){ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ try{ const r=applyBackup(JSON.parse(t)); alert(`Hentet inn: ${r.lister} nye lister, ${r.notater} notater`+(r.konflikter?`. ${r.konflikter} notater ble ikke overskrevet fordi du har skrevet noe nytt der.`:'.')); localStorage.setItem('alpinBackupT',String(Date.now())); render(); }catch(err){ alert('Kunne ikke hente inn: '+err.message); } }); return; } if(e.target.id==='fven'){ S.ven=S.ven||{}; S.ven[S.sex+'|'+S.disc]=e.target.value; save(); render(); return; } if(e.target.id==='lsel'){ S.src=S.src||{}; S.src[S.sex+S.disc]=e.target.value; S.id=null; render(); } });
 app.addEventListener('click',e=>{
   const sp=e.target.closest('[data-sp]'); if(sp){ const sc=app.querySelector('.spk-scroll'); if(sc) sc.scrollBy({left:+sp.dataset.sp*sc.clientWidth*0.8,behavior:'smooth'}); return; }
   const dd=e.target.closest('[data-d]'); if(dd){e.preventDefault();S.disc=dd.dataset.d;render();return}
