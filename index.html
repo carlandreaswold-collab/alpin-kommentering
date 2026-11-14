@@ -90,6 +90,14 @@ tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
 .imp{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
 .imp textarea{width:100%;height:110px;background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:8px;font:13px monospace;margin:6px 0}
 .imp .warn{background:rgba(255,213,79,.12);border-left:3px solid var(--gul);padding:6px 10px;margin:6px 0}
+.warn{background:rgba(255,213,79,.12);border-left:3px solid var(--gul);padding:6px 10px;margin:6px 0}
+.warn button{margin-left:8px}
+.cupstrip{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 10px}
+.cupchip{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:4px 12px;cursor:pointer;font-size:14px}.cupchip b{color:var(--gul);margin-right:4px}.cupchip.top{border-color:var(--gul)}.cupchip.off{opacity:.6}
+.fis{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mut)}
+.fis button,.fis select{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer}
+.fis .ny{background:rgba(255,213,79,.18);border-color:var(--gul);color:var(--gul);font-weight:700}
+.fis .bad{color:var(--red)}.fis .goodt{color:#66d98a}
 .imp .row3{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
 .imptab{max-height:300px;overflow:auto;margin:6px 0}.imptab tr.ny td{color:var(--gul)}
 .listbar .sp{flex:1}.pill{background:rgba(255,213,79,.15);color:var(--gul);border:1px solid #6b5a1d;border-radius:20px;padding:3px 10px;font-size:13px}
@@ -106,14 +114,22 @@ tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
   <div class="seg" id="sSex"></div>
   <div class="seg" id="sDisc"></div>
   <div class="seg" id="sTab"></div>
+  <span id="fis" class="fis"></span>
   <span class="sp"></span>
   <input type="search" id="q" placeholder="Søk utøver…  ( / )" list="dl" autocomplete="off">
   <datalist id="dl"></datalist>
 </header>
 <main id="app"></main>
-<script src="data.js?v=20261114163544"></script>
+<script src="data.js?v=20261114172049"></script>
 <script>
 const D = window.ALPIN_DATA;
+/* Resultater lest fra FIS-PDF (foreløpige, lagret i nettleseren). Legges inn blant rennene, men aldri oppå et renn som FIS-dataene allerede har. */
+let PRES = {}; try{ PRES = JSON.parse(localStorage.getItem('alpinResults')||'{}'); }catch(e){}
+const savePres = ()=>localStorage.setItem('alpinResults', JSON.stringify(PRES));
+if(D.wc) for(const p of Object.values(PRES)){
+  if(D.wc.races.some(r=>!r.prelim && r.sex===p.sex && r.disc===p.disc && r.date===p.date)) continue;   // FIS har det offisielle: det gjelder
+  D.wc.races.push(p);
+}
 const SEX = {K:'Kvinner', M:'Menn'};
 const DISC = {SL:'Slalåm', GS:'Storslalåm', FART:'Fart (SG/DH)'};
 const NOW = '26/27', PREV = '25/26';
@@ -181,6 +197,133 @@ function parseStartList(text){
   const nc=t.match(/Number of Competitors: (\d+)/i); info.expected=nc?+nc[1]:null;
   return {entries, bad, info};
 }
+/* ---------- Resultatliste fra FIS-PDF (RESULTS RUN 1 / RESULTS) ----------
+   Ren logikk (parseResults + checkResults), testes i tests/. Resultatene regnes ikke som kontrollert mot FIS før FIS-henting har bekreftet dem. */
+const _hs = s=>{ const m=String(s).match(/^(?:(\d+):)?(\d{1,2})\.(\d{2})$/); return m?(+(m[1]||0))*6000+(+m[2])*100+(+m[3]):null; };   // «1:52.62» → 11262 (hundredeler)
+const _MON={JAN:1,FEB:2,MAR:3,APR:4,MAY:5,JUN:6,JUL:7,AUG:8,SEP:9,OCT:10,NOV:11,DEC:12};
+function parseResults(text){
+  const L=text.split(/\r?\n/).map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean);
+  const T='(\\d+:\\d\\d\\.\\d\\d|\\d+\\.\\d\\d)';
+  const RF=new RegExp('^(\\d+) (\\d{1,3}) (\\d{4,8}) (.+?) (\\d{4}) ([A-Z]{3}) '+T+' \\((\\d+)\\) '+T+' \\((\\d+)\\) '+T+' (\\d+\\.\\d\\d)(?: (\\d+\\.\\d\\d))?(?: (.*))?$');   // to omganger
+  const RS=new RegExp('^(\\d+) (\\d{1,3}) (\\d{4,8}) (.+?) (\\d{4}) ([A-Z]{3}) '+T+'(?: (\\d+\\.\\d\\d))?(?: (\\d+\\.\\d\\d))?(?: (.*))?$');            // én omgang / omgang 1-listen
+  const SR=new RegExp('^(\\d{1,3}) (\\d{4,8}) (.+?) (\\d{4}) ([A-Z]{3})(?: '+T+' \\((\\d+)\\))?(?: (.*))?$');                                           // uten plass: DNF/DNQ/DNS/DSQ
+  const LOOKS=/^\d{1,3} (?:\d{1,3} )?\d{4,8} .+ \d{4} [A-Z]{3}\b/;
+  const S={run1:{list:[],dnf1:[],dns:[],dsq:[]}, fin:{list:[],dnf1:[],dnf2:[],dnq:[],dns:[],dsq:[]}};
+  const R={s:S, bad:[], heads:{run1:{},fin:{}}, info:{}, cond:{}, tech:{}};
+  let sec=null, sub=null, m;
+  for(const l of L){
+    if(/^RESULTS RUN 1$/i.test(l)){ if(sec!=='run1') sub=null; sec='run1'; continue; }
+    if(/^RESULTS$/i.test(l)){ if(sec!=='fin') sub=null; sec='fin'; continue; }
+    if(/^(START LIST|DRAW LIST|ENTRY LIST|PERFORMANCE ANALYSIS|FIS WORLD CUP STANDINGS|OVERALL|FIS WCSL|CONSTRUCTORS|FIS NATION|FIS WC)/i.test(l)){ sec=null; sub=null; continue; }
+    if(/^(Jury Technical Data|Legend:|TOTALS:)/i.test(l)){ sec=null; sub=null; }
+    // --- overskrifter/metadata ---
+    if(!R.info.sex && (m=l.match(/\b(Women'?s|Ladies|Men'?s)\b (Giant Slalom|Slalom|Super-?G|Downhill|Alpine Combined)/i))){
+      R.info.sex=/^(Women|Ladies)/i.test(m[1])?'K':'M';
+      const d=m[2].toLowerCase(); R.info.disc=d==='giant slalom'?'GS':d==='slalom'?'SL':/^super/.test(d)?'SG':d==='downhill'?'DH':'AC';
+    }
+    if(!R.info.date && /\b(Women'?s|Ladies|Men'?s)\b/i.test(l)){   // raceddato står på rennlinjen («1st Women's Slalom SAT 14 NOV 2026»), ikke på «Generation date»
+      const dt=l.match(/\b(?:MON|TUE|WED|THU|FRI|SAT|SUN) (\d{1,2}) ([A-Z]{3}) (\d{4})\b/); if(dt&&_MON[dt[2]]) R.info.date=`${dt[3]}-${String(_MON[dt[2]]).padStart(2,'0')}-${String(+dt[1]).padStart(2,'0')}`;
+    }
+    if(!R.info.place && (m=l.match(/^(?:AUDI )?(?!FIS)([A-Za-zÀ-ÿ'’. -]+?) \(([A-Z]{3})\)$/)) && !/WORLD CUP/.test(l)){ R.info.place=m[1].trim(); R.info.nat=m[2]; }
+    if(/FIS SKI WORLD CUP/i.test(l)) R.info.cat='WC'; else if(/OLYMPIC|WORLD (?:SKI )?CHAMPIONSHIPS/i.test(l) && !R.info.cat) R.info.cat='OTHER';
+    if(R.info.expected==null && (m=l.match(/Number of Competitors: (\d+)/i))) R.info.expected=+m[1];   // første forekomst (senere lister har andre tall)
+    if((m=l.match(/Course Name (.+)$/))) R.tech.course=m[1].trim();
+    if((m=l.match(/Start Altitude (\d+)m/))) R.tech.start=+m[1];
+    if((m=l.match(/Finish Altitude (\d+)m/))) R.tech.finish=+m[1];
+    if((m=l.match(/Vertical Drop (\d+)m/))) R.tech.drop=+m[1];
+    if((m=l.match(/^Gates\/Turning Gates (\d+)\/(\d+)(?: Gates\/Turning Gates (\d+)\/(\d+))?/))) R.tech.gates=[+m[1],m[3]?+m[3]:null];
+    if((m=l.match(/^Run (\d) (.+?) Snow: (\w+) Temperature - Start: (-?[\d.]+)°C.*Finish: (-?[\d.]+)°C/))) R.cond[m[1]]={sky:m[2],snow:m[3],ts:+m[4],tf:+m[5]};
+    if(!sec) continue;
+    // --- deloverskrifter ---
+    if((m=l.match(/^DID NOT FINISH RUN (\d): (\d+) competitor/i))){ sub='dnf'+m[1]; R.heads[sec]['dnf'+m[1]]=+m[2]; continue; }
+    if((m=l.match(/^DID NOT QUALIFY(?: FOR RUN 2)?: (\d+) competitor/i))){ sub='dnq'; R.heads[sec].dnq=+m[1]; continue; }
+    if((m=l.match(/^DID NOT START(?: RUN \d)?: (\d+) competitor/i))){ sub='dns'; R.heads[sec].dns=+m[1]; continue; }
+    if((m=l.match(/^DISQUALIFIED(?: RUN \d)?: (\d+) competitor/i))){ sub='dsq'; R.heads[sec].dsq=+m[1]; continue; }
+    // --- rader ---
+    const P=(m)=>({bib:+m[0],code:m[1],raw:m[2],year:+m[3],land:m[4]});
+    if(sec==='fin' && (m=l.match(RF))){
+      S.fin.list.push({rank:+m[1],bib:+m[2],code:m[3],raw:m[4],year:+m[5],land:m[6],r1:_hs(m[7]),r1r:+m[8],r2:_hs(m[9]),r2r:+m[10],t:_hs(m[11]),diff:_hs(m[12]),pts:m[13]?+m[13]:null,ski:m[14]||''}); continue; }
+    if((m=l.match(RS)) && (sec==='run1' || sec==='fin')){
+      const o={rank:+m[1],bib:+m[2],code:m[3],raw:m[4],year:+m[5],land:m[6],t:_hs(m[7]),diff:m[8]?_hs(m[8]):0,pts:m[9]?+m[9]:null,ski:m[10]||''};
+      S[sec].list.push(o); continue; }
+    if((m=l.match(SR))){
+      const o={bib:+m[1],code:m[2],raw:m[3],year:+m[4],land:m[5],ski:m[8]||''}; if(m[6]){ o.r1=_hs(m[6]); o.r1r=+m[7]; }
+      const to={dnf1:'dnf1',dnf2:'dnf2',dnq:'dnq',dns:'dns',dsq:'dsq'}[sub];
+      if(to && S[sec][to]) { S[sec][to].push(o); continue; }
+    }
+    if(LOOKS.test(l)) R.bad.push(l);
+  }
+  return R;
+}
+// Kontroller før resultatene tas i bruk. err = stopper, warn = sjekk selv, ok = hva som er kontrollert (vises for åpenhet).
+function checkResults(R){
+  const err=[], warn=[], ok=[], I=R.info, F=R.s.fin, U=R.s.run1;
+  const two=U.list.length>0 || F.list.some(x=>x.r1!=null);
+  if(I.cat==='OTHER') err.push('Dette ser ut som OL/VM. Foreløpig støttes bare verdenscup.');
+  if(!I.sex||!I.disc||!I.date||!I.place) err.push('Fant ikke '+[!I.sex&&'kjønn',!I.disc&&'disiplin',!I.date&&'dato',!I.place&&'sted'].filter(Boolean).join(', ')+' i overskriften.');
+  if(!F.list.length) err.push('Fant ingen endelig resultatliste («RESULTS»). Er rennet ferdig, og er hele PDF-en med?');
+  if(R.bad.length) err.push(`${R.bad.length} linjer så ut som resultatlinjer, men kunne ikke leses: ${R.bad.slice(0,3).join(' | ')}`);
+  if(!F.list.length) return {err,warn,ok};
+  if(!two && I.disc && (I.disc==='SL'||I.disc==='GS')) err.push('Fant ikke omgangstider for et teknisk renn. Formatet er ikke gjenkjent.');
+  if(!two) warn.push('Én omgang (fartsrenn): dette formatet er ikke testet mot en ekte FIS-PDF ennå. Kontrollene under gjelder likevel.');
+  // plasser 1..N (like tider kan gi delt plass)
+  let bad=null; F.list.forEach((x,i)=>{ if(bad===null && !(x.rank===i+1 || (i>0 && x.rank===F.list[i-1].rank))) bad=`plass ${x.rank} på rad ${i+1}`; });
+  if(bad) err.push('Plassene er ikke sammenhengende 1…N ('+bad+').'); else ok.push(`${F.list.length} plasseringer 1…${F.list.length} sammenhengende`);
+  const w=F.list[0];
+  // tid stiger, differanse = tid − vinner, sluttid = omg 1 + omg 2
+  const fe=[]; F.list.forEach((x,i)=>{
+    if(i>0 && x.t<F.list[i-1].t) fe.push(`${x.raw}: tiden stiger ikke`);
+    if(x.diff!==x.t-w.t) fe.push(`${x.raw}: differanse ${x.diff} ≠ ${x.t-w.t}`);
+    if(two && x.r1+x.r2!==x.t) fe.push(`${x.raw}: omg 1 + omg 2 = ${x.r1+x.r2} ≠ sluttid ${x.t}`);
+  });
+  if(fe.length) err.push('Tidene stemmer ikke: '+fe.slice(0,4).join('; ')+(fe.length>4?' …':'')); else ok.push(`${F.list.length} sluttider: stigende, differanse mot vinneren stemmer`+(two?', omg 1 + omg 2 = sluttid':''));
+  if(two){
+    // omgangsplasseringer regnet på nytt fra tidene
+    const r2s=F.list.map(x=>x.r2); const re=[]; F.list.forEach(x=>{ const rk=1+r2s.filter(t=>t<x.r2).length; if(rk!==x.r2r) re.push(`${x.raw}: omg 2-plass ${x.r2r}, regnet ${rk}`); });
+    if(re.length) err.push('Plasseringene i 2. omgang stemmer ikke med tidene: '+re.slice(0,3).join('; ')); else ok.push('plasseringer i 2. omgang regnet på nytt fra tidene: alle stemmer');
+    // mot omgang 1-listen
+    if(U.list.length){
+      const re1=[]; for(const x of F.list){ const u=U.list.find(y=>y.bib===x.bib); if(!u) re1.push(`${x.raw} mangler i omgang 1-listen`); else if(u.t!==x.r1||u.rank!==x.r1r) re1.push(`${x.raw}: omg 1 ${u.t}/${u.rank} i listen, ${x.r1}/${x.r1r} i sluttlisten`); }
+      if(re1.length) err.push('Omgang 1 i sluttlisten stemmer ikke med omgang 1-listen: '+re1.slice(0,3).join('; ')); else ok.push('omgang 1-tid og -plass i sluttlisten = omgang 1-listen: alle stemmer');
+      const ue=[]; U.list.forEach((x,i)=>{ if(i>0 && x.t<U.list[i-1].t) ue.push(x.raw); if(x.diff!==x.t-U.list[0].t) ue.push(x.raw+' (diff)'); if(!(x.rank===i+1||(i>0&&x.rank===U.list[i-1].rank))) ue.push(x.raw+' (plass)'); });
+      if(ue.length) err.push('Omgang 1-listen er ikke i orden: '+ue.slice(0,3).join(', ')); else ok.push(`omgang 1-listen (${U.list.length}): plasser, stigende tid og differanse stemmer`);
+      // kvalifisering: alle som kjørte omg 2 hadde bedre omg 1 enn alle som ikke kvalifiserte
+      const q=[...F.list,...F.dnf2].map(x=>(U.list.find(y=>y.bib===x.bib)||{}).rank).filter(Boolean), nq=F.dnq.map(x=>(U.list.find(y=>y.bib===x.bib)||{}).rank).filter(Boolean);
+      if(q.length&&nq.length&&Math.max(...q)>Math.min(...nq)) err.push('Noen som ikke kvalifiserte hadde bedre omgang 1 enn noen som kjørte omgang 2.'); else if(q.length) ok.push(`kvalifisering: ${q.length} kjørte omgang 2, alle bedre enn de ${nq.length} som ikke kvalifiserte`);
+      if(q.length>30+ (q.length-new Set(q).size)) warn.push(`${q.length} kjørte omgang 2 (vanligvis 30).`);
+      const d1a=new Set(U.dnf1.map(x=>x.bib)), d1b=new Set(F.dnf1.map(x=>x.bib));
+      if(U.dnf1.length&&F.dnf1.length&&(d1a.size!==d1b.size||[...d1a].some(b=>!d1b.has(b)))) err.push('Utgåtte i omgang 1 er ikke de samme i omgang 1-listen og sluttlisten.');
+    }
+  }
+  // antall: alle deltakere regnet for
+  const sum=F.list.length+F.dnf2.length+F.dnq.length+F.dnf1.length+F.dns.length+F.dsq.length;
+  if(two && U.list.length){ const s1=U.list.length+(U.dnf1.length||F.dnf1.length)+(U.dns.length||F.dns.length)+(U.dsq.length||F.dsq.length); if(F.list.length+F.dnf2.length+F.dnq.length!==U.list.length) err.push(`Fullførte omgang 1: ${U.list.length}, men sluttlisten har ${F.list.length+F.dnf2.length+F.dnq.length} (i mål + utgått 2 + ikke kvalifisert).`); }
+  if(I.expected!=null){ if(sum!==I.expected) err.push(`PDF-en sier ${I.expected} deltakere, men lista dekker ${sum} (${F.list.length} i mål, ${F.dnf2.length} utgått omg 2, ${F.dnq.length} ikke kvalifisert, ${F.dnf1.length} utgått omg 1, ${F.dns.length} DNS, ${F.dsq.length} diskv.).`); else ok.push(`antall: ${F.list.length} i mål + ${F.dnf2.length} utgått omg 2 + ${F.dnq.length} ikke kvalifisert + ${F.dnf1.length} utgått omg 1`+(F.dns.length?` + ${F.dns.length} DNS`:'')+(F.dsq.length?` + ${F.dsq.length} diskv.`:'')+` = ${sum} = «Number of Competitors»`); }
+  for(const [k,n] of Object.entries(R.heads.fin)){ const have=F[k]?F[k].length:null; if(have!=null && have!==n) err.push(`Overskriften sier ${n} «${k}», men jeg leste ${have}.`); }
+  const dupe=[...new Set(F.list.map(x=>x.bib).filter((b,i,a)=>a.indexOf(b)!==i))]; if(dupe.length) err.push('Samme startnummer flere ganger i sluttlisten: '+dupe.join(', '));
+  return {err,warn,ok};
+}
+// Alle rader i sluttlisten med utøverne koblet til kort (samme kobling som startlister)
+function resultEntries(R){ const F=R.s.fin; return [...F.list,...F.dnf2,...F.dnq,...F.dnf1,...F.dns,...F.dsq]; }
+function resultRows(R, M){   // → [fid, plass|status, sluttid, omg1, omg2] som i data.js; utøvere uten kort tas ikke med
+  const F=R.s.fin, byKey=new Map(M.map(x=>[x.bib+'|'+x.code,x])), rows=[], skipped=[];
+  const add=(x,v,full)=>{ const mm=byKey.get(x.bib+'|'+x.code); const a=mm&&mm.a; if(!a||!a.fid){ skipped.push(x.raw); return; } rows.push(full?[a.fid,v,x.t,x.r1,x.r2]:[a.fid,v]); };
+  F.list.forEach(x=>add(x,x.rank,true));
+  F.dnf2.forEach(x=>add(x,'DNF2')); F.dnq.forEach(x=>add(x,'DNQ')); F.dnf1.forEach(x=>add(x,'DNF1')); F.dns.forEach(x=>add(x,'DNS')); F.dsq.forEach(x=>add(x,'DQ'));
+  if(!(F.list[0]&&F.list[0].r1!=null)) rows.forEach(r=>{ if(r.length>2){ r.length=3; } });
+  return {rows,skipped};
+}
+function seasonOf(date){ const y=+date.slice(0,4), m=+date.slice(5,7), s=m>=7?y:y-1; return String(s).slice(2)+'/'+String(s+1).slice(2); }
+// Sammenlign med FIS-dataene hvis rennet allerede ligger der. Returnerer {finnes, like, avvik[]}
+function compareWithFis(info, rows){
+  const f=((D.wc&&D.wc.races)||[]).find(r=>!r.prelim && r.sex===info.sex && grp(r.disc)===grp(info.disc) && r.date===info.date);
+  if(!f) return null;
+  const fm=new Map(f.res.map(r=>[r[0],r])), av=[]; let like=0;
+  for(const r of rows){ const x=fm.get(r[0]); if(!x){ av.push(`${(fidToAthRaw(r[0])||r[0])}: ikke i FIS-listen`); continue; }
+    if(r.length===x.length && r.every((v,i)=>v===x[i])) like++; else if(r[1]===x[1] && (r[2]==null||x[2]==null)) like++; else av.push(`${fidToAthRaw(r[0])||r[0]}: PDF ${JSON.stringify(r.slice(1))}, FIS ${JSON.stringify(x.slice(1))}`); }
+  return {id:f.id, n:rows.length, like, avvik:av, antallFis:f.res.length};
+}
+const fidToAthRaw = fid=>{ const a=D.athletes.find(x=>x.fid===fid); return a&&a.name; };
 const _lnd = c=>c==='DEN'?'DAN':c;   // FIS-PDF bruker DEN, basen DAN for Danmark
 function _sim(a,b){   // 1 = lik, basert på Levenshtein
   const m=a.length,n=b.length; if(!m||!n) return 0;
@@ -233,8 +376,8 @@ function seg(el, opts, cur, fn){
 function chrome(){
   seg(sSex, SEX, S.sex, k=>{S.sex=k;S.id=null;S.rid=null;render()});
   seg(sDisc, DISC, S.disc, k=>{S.disc=k;S.id=null;S.rid=null;render()});
-  seg(sTab, {kort:'Startkort', arkiv:'Resultater', medalje:'OL / VM', nytt:'Sesongstart'}, S.tab, k=>{S.tab=k;render()});
-  sDisc.style.display = (S.tab==='medalje'||S.tab==='nytt') ? 'none' : '';
+  seg(sTab, {kort:'Startkort', arkiv:'Resultater', cup:'Cupstilling', medalje:'OL / VM', nytt:'Sesongstart'}, S.tab, k=>{S.tab=k;render()});
+  sDisc.style.display = (S.tab==='medalje'||S.tab==='nytt'||S.tab==='cup') ? 'none' : '';
   dl.innerHTML = D.athletes.filter(a=>a.sex===S.sex).map(a=>`<option value="${esc(a.name)}">`).join('');
 }
 
@@ -257,7 +400,69 @@ const tAfter = x => (x.t!=null && x.w!=null && x.v>1) ? x.t-x.w : null;        /
 const tMargin = x => (x.v===1 && x.t!=null && x.s!=null) ? x.s-x.t : null;      // seiersmargin til nr. 2
 const timeHead = r => r&&r._hasT ? `<th class="r tid">Sluttid</th><th class="r bak">Bak</th>${r.res.some(x=>x.length>4)?'<th class="r omg">1. omg.</th><th class="r omg">2. omg.</th>':''}` : '';
 const timeCells = (x,r) => r&&r._hasT ? `<td class="r tid">${fmt(x.t)}</td><td class="r bak">${x.v===1?'':fdiff(x.t!=null&&r._w!=null?x.t-r._w:null)}</td>${r.res.some(y=>y.length>4)?`<td class="r omg">${fmt(x.r1)}</td><td class="r omg">${fmt(x.r2)}</td>`:''}` : '';
-if(D.wc) D.wc.races.forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.place,v,wc:true,t,r1,r2,w:r._w,s:r._s})));
+if(D.wc) D.wc.races.forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.place,v,wc:true,t,r1,r2,w:r._w,s:r._s,prelim:r.prelim})));
+/* ---------- Cupstilling: regnet av resultatene (samme data som pall og formkurve), så den oppdateres likt for PDF og FIS-henting ----------
+   Kontrolleres mot FIS' stillingsside (bygg/kontroll_cup.py) og mot PDF-ens egen stilling ved import. FIS fjerner noen poeng i sesongfinalen (mars): da kan FIS ha færre poeng enn vi regner. */
+const PTS=[100,80,60,50,45,40,36,32,29,26,24,22,20,18,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1];
+const CUPS={ALL:'Sammenlagt',SL:'Slalåm',GS:'Storslalåm',SG:'Super-G',DH:'Utfor'};
+let cupCache={};
+function cupCalc(sex,season,extra){
+  const key=sex+'|'+season; if(!extra && cupCache[key]) return cupCache[key];
+  const T={}; for(const c of Object.keys(CUPS)) T[c]=new Map();
+  const add=(c,fid,pts,win,race)=>{ const o=T[c].get(fid)||{fid,pts:0,w:0,n:0}; o.pts+=pts; if(win) o.w++; o.n++; T[c].set(fid,o); };
+  let cepar=false, last=null, pre=false;
+  const races=[...((D.wc&&D.wc.races)||[]),...(extra||[])];
+  for(const r of races){
+    if(r.sex!==sex||r.season!==season) continue;
+    if(r.disc==='CE'||r.disc==='PAR'){ cepar=true; continue; }
+    let any=false;
+    for(const [fid,v] of r.res){ if(num(v)&&v>=1&&v<=30){ any=true; add('ALL',fid,PTS[v-1],v===1); if(T[r.disc]) add(r.disc,fid,PTS[v-1],v===1); } }
+    if(any){ if(!last||r.date>=last.date) last=r; if(r.prelim) pre=true; }
+  }
+  const out={T:{},cepar,last,pre};
+  for(const c of Object.keys(CUPS)){
+    const rows=[...T[c].values()].sort((p,q)=>q.pts-p.pts||q.w-p.w);
+    rows.forEach((o,i)=>{ o.rank=i&&rows[i-1].pts===o.pts?rows[i-1].rank:i+1; });
+    out.T[c]={rows,by:new Map(rows.map(o=>[o.fid,o]))};
+  }
+  if(!extra) cupCache[key]=out;
+  return out;
+}
+// Stillingen i PDF-pakken: «OVERALL FIS WORLD CUP STANDINGS» → {ALL:{kode:[plass,poeng]}, SL:…}
+function parsePdfCup(text){
+  const L=text.split(/\r?\n/).map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean), out={}; let on=false, cols=null;
+  for(const l of L){
+    if(/^OVERALL FIS WORLD CUP STANDINGS$/i.test(l)){ on=true; continue; }
+    if(on && /^(OVERALL FIS|FIS WCSL|FIS WORLD CUP STANDINGS|FIS NATION|OVERALL CONSTRUCTORS|CONSTRUCTORS|PERFORMANCE|START LIST|RESULTS)/i.test(l) && !/^OVERALL FIS WORLD CUP/i.test(l)){ on=false; continue; }
+    if(!on) continue;
+    let m=l.match(/^FIS NSA WC ((?:[A-Z]{2} ?)+)$/); if(m){ cols=m[1].trim().split(' '); continue; }
+    if(!cols) continue;
+    m=l.match(/^(\d+) (\d{4,8}) (.+?) ([A-Z]{3}) (\d+)(?: (\d+))?((?: (?:-|\d+ \(\d+\)))+)$/);   // differansen mangler for lederne
+    if(!m) continue;
+    const cells=m[7].trim().match(/-|\d+ \(\d+\)/g); if(cells.length!==cols.length) continue;
+    (out.ALL=out.ALL||{})[m[2]]=[+m[1],+m[5]];
+    cols.forEach((c,i)=>{ const x=cells[i].match(/^(\d+) \((\d+)\)$/); if(x) (out[c]=out[c]||{})[m[2]]=[+x[2],+x[1]]; });
+  }
+  return out;
+}
+function cupVsPdf(text, info, rows, M, race){   // → {ok:[], warn:[]}: regnet stilling mot PDF-ens stilling, for utøvere som kjørte rennet
+  const P=parsePdfCup(text), ok=[], warn=[]; if(!P.ALL) return {ok,warn:['Fant ikke cupstillingen i PDF-en, så den er ikke kontrollert.']};
+  const code2fid=new Map(); for(const x of M) if(x.a&&x.a.fid) code2fid.set(x.code,x.a.fid);
+  const season=seasonOf(info.date), C=cupCalc(info.sex,season,race?[race]:[]), bad=[]; let n=0;
+  for(const [cup,tab] of Object.entries(P)) for(const [code,[rk,pts]] of Object.entries(tab)){
+    const fid=code2fid.get(code); if(!fid||!C.T[cup]) continue; n++;
+    const o=C.T[cup].by.get(fid);
+    if(!o||o.pts!==pts||o.rank!==rk) bad.push(`${fidToAthRaw(fid)||code} ${CUPS[cup]}: PDF ${rk}. (${pts} p), regnet ${o?o.rank+'. ('+o.pts+' p)':'ingen poeng'}`);
+  }
+  if(bad.length) warn.push(`Cupstillingen vi regner avviker fra PDF-ens stilling for ${bad.length} av ${n}: ${bad.slice(0,4).join('; ')}${bad.length>4?' …':''}. Stillingen i appen kan være feil: sjekk mot FIS.`);
+  else if(n) ok.push(`cupstilling (sammenlagt og per disiplin, plass og poeng) regnet av våre resultater = PDF-ens stilling: ${n} tall for utøverne i rennet`);
+  return {ok,warn};
+}
+function liveAdd(p){ cupCache={};   // legger et foreløpig PDF-renn inn i løpende data uten omlasting
+  D.wc.races.push(p); prep(p);
+  p.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({date:p.date,season:p.season,disc:p.disc,race:p.place,v,wc:true,t,r1,r2,w:p._w,s:p._s,prelim:1}));
+  for(const k of Object.keys(resCache)) delete resCache[k];
+}
 const chBy = {};
 if(D.wc) (D.wc.champs||[]).forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(chBy[fid]=chBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.champ+' '+r.year,v,wc:true,champ:true,t,r1,r2,w:r._w,s:r._s})));
 const resCache = {};
@@ -285,7 +490,7 @@ function chip(x){
   const v=x.v; let cls='chip', txt=v;
   if(v===1) cls+=' p1'; else if(num(v)&&v<=3) cls+=' pod'; else if(num(v)&&v<=10) cls+=' t10'; else if(!num(v)) cls+=' st';
   if(!num(v)) txt = String(v).replace(/^DNF\d$/,'DNF');
-  return `<div class="${cls}" title="${esc(x.date||'')}"><b>${esc(txt)}</b><i>${esc(raceLabel(x))}${x.date&&x.wc?' · '+x.date.slice(5).replace('-','.'):''}</i></div>`;
+  return `<div class="${cls}" title="${esc(x.date||'')}"><b>${esc(txt)}</b><i>${esc(raceLabel(x))}${x.date&&x.wc?' · '+x.date.slice(5).replace('-','.'):''}${x.prelim?' · <span style="color:var(--gul)">foreløpig</span>':''}</i></div>`;
 }
 function spark(a){
   const pts=results(a).filter(x=>grp(x.disc)===S.disc && started(x));
@@ -351,13 +556,18 @@ function stats(a){
   const sl = c => `${+c-1}/${String(c).slice(2)}`;   // FIS-sesongkode 2026 = 2025/26
   let karriere='';
   if(a.pod){
-    const ss=Object.keys(a.pod).sort(), tot=ss.reduce((t,k)=>t.map((x,i)=>x+a.pod[k][i]),[0,0,0]);
+    // FIS-biografien + pallplasser fra foreløpige PDF-renn (FIS-renn med samme dato erstatter dem, så ingenting telles to ganger)
+    const POD=JSON.parse(JSON.stringify(a.pod)); let nPre=0;
+    for(const x of results(a)) if(x.prelim&&!x.champ&&num(x.v)&&x.v<=3){ const k=String(2000+(+x.season.slice(3))); (POD[k]=POD[k]||[0,0,0])[x.v-1]++; nPre++; }
+    const ss=Object.keys(POD).sort(), tot=ss.reduce((t,k)=>t.map((x,i)=>x+POD[k][i]),[0,0,0]);
     const sum=tot[0]+tot[1]+tot[2];
-    karriere = sum? `<div class="karriere"><b>Hele karrieren (verdenscup, FIS): ${sum} pallplasser</b> · ${tot[0]} seiere · ${tot[1]} andreplasser · ${tot[2]} tredjeplasser · første pall ${sl(ss[0])}
-      <details><summary>Per sesong</summary><div class="chips">${ss.map(k=>`<div class="chip ${a.pod[k][0]?'p1':'pod'}"><b>${a.pod[k][0]+a.pod[k][1]+a.pod[k][2]}</b><i>${sl(k)} · ${a.pod[k].join('-')}</i></div>`).join('')}</div><div class="note">Tall per sesong: 1.-2.-3. plass.</div></details></div>`
+    karriere = sum? `<div class="karriere"><b>Hele karrieren (verdenscup, FIS): ${sum} pallplasser</b> · ${tot[0]} seiere · ${tot[1]} andreplasser · ${tot[2]} tredjeplasser · første pall ${sl(ss[0])}${nPre?` <span style="color:var(--gul)">(inkl. ${nPre} foreløpig fra PDF, ikke kontrollert mot FIS)</span>`:''}
+      <details><summary>Per sesong</summary><div class="chips">${ss.map(k=>`<div class="chip ${POD[k][0]?'p1':'pod'}"><b>${POD[k][0]+POD[k][1]+POD[k][2]}</b><i>${sl(k)} · ${POD[k].join('-')}</i></div>`).join('')}</div><div class="note">Tall per sesong: 1.-2.-3. plass.</div></details></div>`
       : '<div class="karriere note">Ingen verdenscuppallplasser i karrieren (FIS).</div>';
   }
+  const nPre=inScope.filter(x=>x.prelim).length;
   return `${knapper}
+  ${nPre?`<div class="warn">⚠ ${nPre} renn i dette utvalget er lest fra PDF og ikke kontrollert mot FIS ennå (merket «foreløpig»). Tallene under inkluderer dem. «Hele karrieren» (FIS) er uten.</div>`:''}
   ${karriere}
   <div class="stat big2"><div><b class="gul">${pods.length}</b>pallplasser</div><div><b>${wins}</b>seiere</div><div><b>${t10}</b>topp 10</div><div><b>${best}</b>beste plass</div><div><b>${snitt}</b>snitt (i mål)</div><div><b>${dnf}</b>utgått</div><div><b>${ns.length}/${wc.length}</b>i mål / start</div>${ch.length?`<div><b>${ch.length}</b>OL/VM-pall</div>`:''}</div>
   <div class="disc">Pallplasser i verdenscupen, alle disipliner (${scope==='total'?'alle sesonger i dataene':scope})</div>
@@ -453,8 +663,9 @@ function listbar(){
 }
 function impChecks(){ return checkImport(IMP.res, IMP.sex, IMP.disc, IMP.run, LISTS, !!IMP.ocr); }
 function impPanel(){
-  const R=IMP.res;
+  const R=IMP.kind==='res'?null:IMP.res;
   let prev='';
+  if(IMP.kind==='res'&&IMP.rr) prev=resPreview();
   if(R){
     const m=R.m, nNew=m.filter(x=>!x.a).length;
     const C=impChecks();
@@ -486,11 +697,11 @@ function autoLabel(){ return [IMP.res.info.place,IMPDISC[IMP.disc],(IMP.res.info
 function readImport(){
   const text=document.getElementById('itext').value;
   if(!text.trim()){ alert('Ingen tekst å lese. Lim inn startlisten i feltet først.'); return; }
-  processText(text);
+  if(parseResults(text).s.fin.list.length) processResultsText(text); else processText(text);
 }
 function processText(text){
   const P=parseStartList(text);
-  IMP.text=text; IMP.labelEdited=false; IMP.error=null;
+  IMP.kind='start'; IMP.rr=null; IMP.text=text; IMP.labelEdited=false; IMP.error=null;
   IMP.sex=P.info.sex||S.sex; IMP.disc=P.info.disc||S.disc; IMP.run=P.info.run||1;
   if(!P.info.sex && P.entries.length){   // overskriften mangler (f.eks. beskåret bilde): ta kjønnet som gir flest treff på kort
     const hit=sx=>matchEntries(P.entries,sx).filter(x=>x.a).length, k=hit('K'), m=hit('M');
@@ -614,7 +825,8 @@ async function importFiles(files){
       const buf=await f.arrayBuffer();
       const isPdf=new TextDecoder().decode(new Uint8Array(buf,0,5))==='%PDF-';
       const text=isPdf?await pdfToText(buf):new TextDecoder().decode(buf);
-      items.push({name:f.name,text,run:+((text.match(/START LIST RUN (\d)/i)||[])[1]||1)});
+      const isRes=parseResults(text).s.fin.list.length>0;   // resultatpakke fra FIS (RESULTS) skal ikke leses som startliste
+      items.push({name:f.name,text,kind:isRes?'res':'start',run:isRes?0:+((text.match(/START LIST RUN (\d)/i)||[])[1]||1)});
     }
     if(imgs.length){   // flere bilder regnes som deler av samme liste (f.eks. to sider)
       const text=await imagesToText(imgs);
@@ -624,7 +836,7 @@ async function importFiles(files){
     IMP.queue=items; IMP.busy=false; nextImport();
   }catch(err){ IMP.busy=false; IMP.error='Kunne ikke lese filen: '+(err&&err.message||err); render(); }
 }
-function nextImport(){ const q=IMP.queue.shift(); if(!q){ IMP=null; render(); return; } IMP.fileName=q.name; IMP.ocr=!!q.ocr; processText(q.text); }
+function nextImport(){ const q=IMP.queue.shift(); if(!q){ IMP=null; render(); return; } IMP.fileName=q.name; IMP.ocr=!!q.ocr; if(q.kind==='res') processResultsText(q.text); else processText(q.text); }
 window.addEventListener('dragover',e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files')) e.preventDefault(); });
 window.addEventListener('drop',e=>{ if(e.dataTransfer&&e.dataTransfer.files.length){ e.preventDefault(); importFiles([...e.dataTransfer.files]); } });
 function impChanged(id,v){   // endret kjønn/disiplin/omgang i forhåndsvisningen: match og sjekk på nytt
@@ -634,7 +846,47 @@ function impChanged(id,v){   // endret kjønn/disiplin/omgang i forhåndsvisning
   if(!IMP.labelEdited) IMP.label=autoLabel();
   render();
 }
+function processResultsText(text){
+  const R=parseResults(text), sex=R.info.sex||S.sex;
+  const M=matchEntries(resultEntries(R),sex), rr=resultRows(R,M), C=checkResults(R);
+  if(rr.skipped.length) C.warn.push(`${rr.skipped.length} utøvere finnes ikke som kort i basen og er ikke lagt inn: ${rr.skipped.slice(0,6).join(', ')}${rr.skipped.length>6?' …':''}`);
+  const lik=M.filter(x=>x.a&&x.how==='lik navn'); if(lik.length) C.warn.push('Lik stavemåte, sjekk at det er riktig person: '+lik.map(x=>prettyName(x.raw)+' → '+x.a.name).join('; '));
+  const lm=M.filter(x=>x.landMismatch); if(lm.length) C.warn.push('Land stemmer ikke med kortet for: '+lm.slice(0,5).map(x=>prettyName(x.raw)).join(', '));
+  const am=M.filter(x=>x.ambiguous); if(am.length) C.warn.push('Flere mulige kort for: '+am.slice(0,5).map(x=>prettyName(x.raw)).join(', '));
+  const _cmp=(R.info.sex&&R.info.disc&&R.info.date)?compareWithFis(R.info,rr.rows):null;
+  if(!C.err.length && R.info.date){ const cv=cupVsPdf(text,R.info,rr.rows,M,_cmp?null:{sex:R.info.sex,season:seasonOf(R.info.date),disc:R.info.disc,date:R.info.date,res:rr.rows,prelim:1}); C.ok.push(...cv.ok); C.warn.push(...cv.warn); }
+  IMP.kind='res'; IMP.res=null; IMP.text=text; IMP.error=null;
+  IMP.rr={R,M,rr,C,sex,cmp:(R.info.sex&&R.info.disc&&R.info.date)?compareWithFis(R.info,rr.rows):null};
+  render();
+}
+function useResults(){
+  const {R,rr,C,cmp}=IMP.rr, I=R.info;
+  if(C.err.length||cmp||!rr.rows.length) return;
+  const id='P'+I.date+I.sex+I.disc, again=!!PRES[id];
+  PRES[id]={id,date:I.date,sex:I.sex,disc:I.disc,place:I.place,nat:I.nat||'',season:seasonOf(I.date),prelim:1,t:Date.now(),file:IMP.fileName||'',res:rr.rows,x:{tech:R.tech,cond:R.cond}};
+  savePres();
+  S.tab='arkiv'; S.sex=I.sex; S.disc=grp(I.disc); S.season=PRES[id].season; S.rid=id; S.id=null;
+  const rest=IMP.queue||[]; IMP=null; save();
+  if(again){ location.reload(); return; }   // samme renn lest på nytt: last siden på nytt så gamle rader ikke blir liggende
+  liveAdd(PRES[id]);
+  if(rest.length){ IMP={open:true,queue:rest}; nextImport(); return; }
+  render();
+}
+function resPreview(){
+  const {R,rr,C,cmp,M}=IMP.rr, I=R.info, F=R.s.fin;
+  const lab=I.place?`${esc(I.place)} · ${DSHORT[I.disc]||I.disc} · ${SEX[I.sex]||'?'} · ${I.date||'?'}`:'(ukjent renn)';
+  const top=F.list.slice(0,12).map(x=>{ const mm=M.find(y=>y.bib===x.bib&&y.code===x.code); return `<tr><td class="r">${x.rank}</td><td>${esc(mm&&mm.a?mm.a.name:prettyName(x.raw))}</td><td>${x.land}</td><td class="r">${fmt(x.r1)}${x.r1r?' ('+x.r1r+')':''}</td><td class="r">${fmt(x.r2)}${x.r2r?' ('+x.r2r+')':''}</td><td class="r">${fmt(x.t)}</td><td class="r">${x.rank===1?'':fdiff(x.diff)}</td></tr>`; }).join('');
+  return `<div class="impres"><h3 style="margin:4px 0">Resultatliste: ${lab}</h3>
+    ${C.err.map(w=>`<div class="err">⛔ ${esc(w)}</div>`).join('')}${C.warn.map(w=>`<div class="warn">⚠ ${esc(w)}</div>`).join('')}
+    ${C.ok.length?`<div class="note" style="margin:6px 0"><b>Kontrollert (maskinelt, mot PDF-ens egne tall):</b><br>${C.ok.map(w=>'✓ '+esc(w)).join('<br>')}</div>`:''}
+    ${cmp?`<div class="${cmp.avvik.length?'err':'note'}" style="margin:6px 0">${cmp.avvik.length?'⛔':'✓'} Rennet ligger allerede i basen fra FIS (offisielt). Sammenlignet ${cmp.n} rader: <b>${cmp.like} like</b>, ${cmp.avvik.length} avvik${cmp.avvik.length?': '+esc(cmp.avvik.slice(0,5).join(' | ')):''}. ${cmp.avvik.length?'':'Ingenting å legge inn: PDF-en bekrefter FIS-dataene.'}</div>`:''}
+    <p><b>${F.list.length}</b> i mål · ${F.dnf2.length} utgått omg 2 · ${F.dnq.length} ikke kvalifisert · ${F.dnf1.length} utgått omg 1${F.dns.length?` · ${F.dns.length} DNS`:''}${F.dsq.length?` · ${F.dsq.length} diskv.`:''} · <b>${rr.rows.length}</b> koblet til kort</p>
+    <div class="imptab"><table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th><th class="r">Omg 1</th><th class="r">Omg 2</th><th class="r">Sluttid</th><th class="r">Bak</th></tr>${top}</table></div>
+    <p class="note">Viser de ${Math.min(12,F.list.length)} første. Resultatet lagres i nettleseren, merkes «foreløpig» og erstattes av FIS-dataene når de er hentet. Det påvirker ikke «Hele karrieren».</p>
+    <button id="iuse" ${C.err.length||cmp||!rr.rows.length?'disabled':''}>✔ Legg inn resultatene (foreløpig)</button> <button id="icancel">Avbryt</button></div>`;
+}
 function useImport(){
+  if(IMP.kind==='res'){ useResults(); return; }
   const R=IMP.res, C=impChecks();
   if(!R.m.length || (C.err.length && !(document.getElementById('iforce')||{}).checked)) return;
   const sex=IMP.sex, disc=IMP.disc, run=IMP.run;
@@ -659,6 +911,7 @@ function faktaBox(a){
   const opts = st.steder.map(p=>`<option ${p===ven?'selected':''}>${esc(p)}</option>`).join('');
   return `<div class="box fakta"><h3>Resultat-fakta · ${DISC[g]}${st.steder.length?`<select id="fven" title="Velg bakke">${opts}</select>`:''}</h3>
     ${vf.length||gf.length?`<ul>${vf.slice(0,4).map(li).join('')}${gf.slice(0,3).map(li).join('')}</ul>`:'<div class="note">Ingen fakta funnet for denne utøveren/bakken.</div>'}
+    ${(()=>{ const n=results(a).filter(x=>x.prelim&&grp(x.disc)===g).length; return n?`<div class="warn">⚠ ${n} foreløpig PDF-renn i ${DISC[g].toLowerCase()} er <b>ikke</b> med i faktaene her (de regnes bare av FIS-data). Formkurve, pall og statistikk under er oppdatert.</div>`:''; })()}
     <div class="fs">Regnet av FIS-resultatene (verdenscup siden 2009/10). Hold musepekeren over en linje for kilde. Omgangsfakta gjelder siste tre sesonger.</div></div>`;
 }
 function kort(){
@@ -694,6 +947,7 @@ function kort(){
       <div><div class="nm">${esc(a.name)}</div><div class="sub">${esc(a.land||'')}${a.alder?' · '+a.alder+' år':''} · ${DISC[S.disc]}${nr==null?' · <span style="color:var(--gul)">ikke på '+(activeList()?'den innlimte startlisten':'startlisten '+NOW+' i denne disiplinen')+'</span>':''}${exText(a)}${a.gjest?' · <span style="color:var(--gul)">ny utøver, ikke i basen (ingen historikk)</span>':''}${otherDisc.length?' · kjører også '+otherDisc.map(d=>`<a href="#" data-d="${d}" style="color:var(--acc)">${DISC[d].split(' ')[0]}</a>`).join(', '):''}</div></div>
       <div class="nav"><button id="bp">◀</button><button id="bn">▶</button></div>
     </div>
+    ${cupStrip(a)}
     <div class="grid">
       <div class="box nyhet"><h3>Siste nytt</h3>
         ${a.news?`<p>${esc(a.news)}</p>`:'<div class="note">Ingen nyhet i arket.</div>'}
@@ -716,6 +970,27 @@ function kort(){
   </div>`;
   return html;
 }
+function cupStripLabel(C){ return C.last?`etter ${esc(C.last.place)} ${DSHORT[C.last.disc]||C.last.disc} ${C.last.date.slice(8)}.${C.last.date.slice(5,7)}${C.pre?' (inkl. foreløpig PDF-resultat)':''}`:'ingen renn ennå'; }
+function cupTab(){
+  const cup=CUPS[S.cup]?S.cup:'ALL', C=cupCalc(S.sex,NOW), t=C.T[cup], lead=t.rows[0]?t.rows[0].pts:0;
+  const rows=S.showAllCup?t.rows:t.rows.slice(0,30);
+  return `<div class="card arkiv"><div class="seg" id="sCup"></div>
+    <h2 style="margin:8px 0 2px">${CUPS[cup]==='Sammenlagt'?'Verdenscupen sammenlagt':'Verdenscupen i '+CUPS[cup].toLowerCase()} · ${SEX[S.sex]} · ${NOW}</h2>
+    <div class="note" style="margin:0 0 6px">Stilling ${cupStripLabel(C)}. Poeng 100-80-60-50-45-40-36-32-29-26-24-22-20-18-16-15-14-13-12-11-10-9-8-7-6-5-4-3-2-1.</div>
+    ${C.pre?'<div class="warn">⚠ Stillingen inkluderer renn lest fra PDF som ikke er kontrollert mot FIS-databasen ennå.</div>':''}
+    ${C.cepar?'<div class="warn">⚠ Sesongen har city event/parallellrenn. De er ikke regnet med i poengene her: sjekk mot FIS.</div>':''}
+    ${t.rows.length?`<table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th><th class="r">Poeng</th><th class="r">Bak leder</th><th class="r">Renn med poeng</th><th class="r">Seiere</th></tr>
+    ${rows.map(o=>{ const a=fidToAth[o.fid]; return `<tr class="${a&&a.aktiv?'go':'inakt'}${o.rank<=3?' p'+o.rank:''}"${a&&a.aktiv?` data-id="${a.id}"`:''}><td class="r">${o.rank}</td><td>${esc(a?a.name:'FIS '+o.fid)}</td><td>${esc(a?a.land||'':'')}</td><td class="r"><b>${o.pts}</b></td><td class="r">${o.rank===1?'':'−'+(lead-o.pts)}</td><td class="r">${o.n}</td><td class="r">${o.w||''}</td></tr>`; }).join('')}</table>
+    ${t.rows.length>30?`<button class="more" id="cupall">${S.showAllCup?'Vis bare topp 30':'Vis alle '+t.rows.length}</button>`:''}`:'<div class="note">Ingen poeng delt ut ennå.</div>'}
+    <p class="note">Regnet av resultatene i basen (de samme som pall og formkurve), kontrollert mot FIS' stilling hver gang data hentes. Delt plass ved lik poengsum. Klikk et blått navn for utøverkortet.</p></div>`;
+}
+function cupStrip(a){
+  if(!a.fid) return '';
+  const C=cupCalc(a.sex,NOW), order=S.disc==='FART'?['ALL','SG','DH']:['ALL',S.disc];
+  const chip=c=>{ const t=C.T[c], o=t.by.get(a.fid), lead=t.rows[0]?t.rows[0].pts:0;
+    return o?`<span class="cupchip ${o.rank<=3?'top':''}" data-cup="${c}" title="Åpne hele ${CUPS[c].toLowerCase()}-stillingen"><b>${CUPS[c]}</b> ${o.rank}. plass · ${o.pts} p${o.rank===1?' · leder':' · −'+(lead-o.pts)}</span>`:`<span class="cupchip off" data-cup="${c}"><b>${CUPS[c]}</b> ingen poeng ennå</span>`; };
+  return `<div class="cupstrip"><span class="note">Cupstilling ${NOW}, ${cupStripLabel(C)}:</span> ${order.map(chip).join('')}</div>`;
+}
 function arkiv(){
   const all=(D.wc&&D.wc.races)||[];
   const seasons=[...new Set(all.map(r=>r.season))].sort().reverse();
@@ -725,17 +1000,25 @@ function arkiv(){
   if(r) S.rid=r.id;
   const rows=r?r.res.map(([fid,v,t,r1,r2])=>({a:fidToAth[fid],v,t,r1,r2})).filter(x=>x.a):[];
   rows.sort((p,q)=>{const pn=num(p.v),qn=num(q.v); return pn&&qn?p.v-q.v : pn?-1 : qn?1 : String(p.v).localeCompare(String(q.v))});
-  const lbl=x=>`${x.place}${grp(x.disc)==='FART'?' '+x.disc:''}${x.disc==='CE'?' city':''}${x.disc==='PAR'?' paral.':''} · ${x.date.slice(8)}.${x.date.slice(5,7)}`;
+  const lbl=x=>`${x.prelim?'✎ ':''}${x.place}${grp(x.disc)==='FART'?' '+x.disc:''}${x.disc==='CE'?' city':''}${x.disc==='PAR'?' paral.':''} · ${x.date.slice(8)}.${x.date.slice(5,7)}`;
   return `<div class="card arkiv">
     <div class="seg" id="sSeason"></div>
     <div class="races">${list.map(x=>`<button class="${r&&x.id===r.id?'on':''}" data-r="${x.id}">${esc(lbl(x))}</button>`).join('')||'<span class="note">Ingen renn.</span>'}</div>
     ${r?`<h2 style="margin:6px 0">${esc(r.place)} (${esc(r.nat)}) · ${DSHORT[r.disc]} · ${SEX[S.sex]} · ${r.date}</h2>
+    ${r.prelim?`<div class="warn">⚠ <b>Foreløpig:</b> lest fra PDF${r.file?' («'+esc(r.file)+'»)':''} og kontrollert mekanisk (plasser, tider, antall), men ikke mot FIS-databasen. Erstattes automatisk når FIS-dataene for rennet er hentet. <button data-delres="${esc(r.id)}">Fjern dette PDF-resultatet</button></div>${techLine(r)}`:''}
     <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}<th class="r">Startnr ${NOW}</th></tr>
     ${rows.map(x=>`<tr class="${x.a.aktiv?'go':'inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}"${x.a.aktiv?` data-id="${x.a.id}"`:' title="Ikke aktiv utøver"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}<td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
     <p class="note">${r.par?'Parallellrenn (utslag): FIS har ingen sluttider. ':''}Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk et blått navn (aktive utøvere) for å åpne kortet.</p>`:''}
   </div>`;
 }
 const CD = {SL:'Slalåm', GS:'Storslalåm', SG:'Super-G', DH:'Utfor', AC:'Kombinasjon'};
+function techLine(r){
+  const x=r.x||{}, t=x.tech||{}, c=x.cond||{}; const bits=[];
+  if(t.course) bits.push('Løype: '+esc(t.course)+(t.start?` · ${t.start}→${t.finish} m, ${t.drop} m fall`:''));
+  if(t.gates) bits.push('Porter: '+t.gates.filter(Boolean).map((g,i)=>'omg '+(i+1)+' '+g).join(', '));
+  for(const k of Object.keys(c)) bits.push(`omg ${k}: ${esc(String(c[k].sky).toLowerCase())}, snø ${esc(String(c[k].snow).toLowerCase())}, ${c[k].ts}/${c[k].tf} °C (start/mål)`);
+  return bits.length?`<div class="note" style="margin:4px 0">${bits.join(' · ')}</div>`:'';
+}
 function medalje(){
   const all=((D.wc&&D.wc.champs)||[]).filter(r=>r.sex===S.sex);
   const keys=[...new Set(all.map(r=>r.champ+' '+r.year))].sort((p,q)=>q.slice(3)-p.slice(3));
@@ -767,8 +1050,9 @@ function nytt(){
 }
 function render(){
   chrome(); save();
-  app.innerHTML = S.tab==='kort'?kort():S.tab==='arkiv'?arkiv():S.tab==='nytt'?nytt():medalje();
+  app.innerHTML = S.tab==='kort'?kort():S.tab==='arkiv'?arkiv():S.tab==='cup'?cupTab():S.tab==='nytt'?nytt():medalje();
   if(S.tab==='arkiv'){ const ss=[...new Set(((D.wc&&D.wc.races)||[]).map(r=>r.season))].sort().reverse(); seg(document.getElementById('sSeason'),Object.fromEntries(ss.map(x=>[x,'Sesong '+x])),S.season,k=>{S.season=k;S.rid=null;render()}); }
+  if(S.tab==='cup') seg(document.getElementById('sCup'),CUPS,S.cup||'ALL',k=>{S.cup=k;S.showAllCup=false;render()});
   const ont=document.getElementById('ont'); if(ont){ const a=byId[S.id]; let committed=ont.value;
     ont.oninput=()=>localStorage.setItem(oldNoteKey(a),ont.value);
     ont.onchange=()=>{ if(ont.value===committed) return; const h=getHist(a); h.push(committed); localStorage.setItem(histKey(a),JSON.stringify(h.slice(-20))); committed=ont.value;
@@ -816,6 +1100,9 @@ app.addEventListener('click',e=>{
   if(e.target.id==='icancel'){ IMP=null; render(); return; }
   if(e.target.id==='iread'){ readImport(); return; }
   if(e.target.id==='iuse'){ useImport(); return; }
+  const cb=e.target.closest('[data-cup]'); if(cb){ S.cup=cb.dataset.cup; S.tab='cup'; S.showAllCup=false; render(); return; }
+  if(e.target.id==='cupall'){ S.showAllCup=!S.showAllCup; render(); return; }
+  const dr=e.target.closest('[data-delres]'); if(dr){ if(confirm('Fjerne det foreløpige PDF-resultatet fra denne nettleseren?')){ delete PRES[dr.dataset.delres]; savePres(); S.rid=null; save(); location.reload(); } return; }
   if(e.target.id==='ldel'){ const k=S.src[S.sex+S.disc]; if(k&&confirm('Slette listen «'+LISTS[k].label+'»?')){ delete LISTS[k]; S.src[S.sex+S.disc]='ark'; saveLists(); S.id=null; render(); } return; }
   if(e.target.id==='bp') return step(-1);
   if(e.target.id==='bn') return step(1);
@@ -837,6 +1124,35 @@ q.addEventListener('change',()=>{
   if(startnr(a)==null){ const d=Object.keys(a.start[NOW]||{})[0]; if(d) S.disc=d; }
   S.id=a.id;S.tab='kort';q.value='';q.blur();render()
 });
+/* ---------- Hent fra FIS (vei 2): virker bare når siden åpnes fra server.py. På stash/GitHub/file:// vises ingenting. ---------- */
+let API=null, LOADV=null;
+const hhmm = t=>{ const d=new Date(t*1000); return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+function fisUI(){
+  const el=document.getElementById('fis'); if(!el) return;
+  if(!API){ el.innerHTML=''; return; }
+  const L=API.last, k=(L&&L.kontroll)||{};
+  const ny = LOADV!=null && API.dataVersion!==LOADV;
+  const kont = L&&L.ok&&k.rader ? ` · kontroll: ${k.rader.toLocaleString('nb-NO')} rader, ${k.feil||0} feil${k.cuptall?`, cupstilling ${k.cuptall} tall mot FIS, ${k.cupfeil||0} feil`:''}` : '';
+  const stat = API.running ? `<span>⏳ ${esc(API.step||'Henter…')}${API.kilde==='auto'?' (auto)':''}</span>`
+    : L ? `<span class="${L.ok?'goodt':'bad'}" title="${esc((L.logg||[]).slice(-6).join('\n'))}">${L.ok?'✓':'⛔'} ${hhmm(L.ferdig)} ${esc(L.tekst)}${kont}${L.ok?'':' '+esc(Object.entries(k).filter(([n,v])=>n!=='rader'&&v).map(([n,v])=>n+': '+v).join(', '))}</span>` : '<span>Ikke hentet i denne økta</span>';
+  el.innerHTML=`<button id="fupd" ${API.running?'disabled':''} title="Henter nye resultater fra FIS, bygger og kjører alle kontroller. Publiserer ikke.">🔄 Hent fra FIS</button>
+    <label title="Sjekker FIS selv, bare på rennedager mellom 08 og 23. Du kan fortsatt trykke knappen."><input type="checkbox" id="fauto" ${API.auto.on?'checked':''}> auto</label>
+    <select id="fmin" title="Hvor ofte">${[5,10,15,30,60].map(m=>`<option value="${m}" ${m===API.auto.min?'selected':''}>${m} min</option>`).join('')}</select>
+    ${stat}${ny?'<button class="ny" id="freload">🔔 Nye data klare: last inn på nytt</button>':''}`;
+}
+async function apiGet(){
+  try{ const r=await fetch('/api/status',{cache:'no-store'}); if(!r.ok||!(r.headers.get('content-type')||'').includes('json')) throw 0; API=await r.json(); if(LOADV==null) LOADV=API.dataVersion; }catch(e){ API=null; }
+  fisUI(); setTimeout(apiGet, API&&API.running?3000:30000);
+}
+const apiPost=(u,b)=>fetch(u,{method:'POST',headers:{'X-Alpin':'1','Content-Type':'application/json'},body:JSON.stringify(b||{})}).then(r=>r.json()).then(j=>{ API=j; fisUI(); setTimeout(apiGet,2500); });
+document.getElementById('fis').addEventListener('click',e=>{
+  if(e.target.id==='fupd') apiPost('/api/oppdater');
+  if(e.target.id==='freload') location.reload();
+});
+document.getElementById('fis').addEventListener('change',e=>{
+  if(e.target.id==='fauto'||e.target.id==='fmin') apiPost('/api/auto',{on:document.getElementById('fauto').checked,min:+document.getElementById('fmin').value});
+});
+apiGet();
 render();
 </script>
 </body>
