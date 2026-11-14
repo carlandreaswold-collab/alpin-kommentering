@@ -41,7 +41,8 @@ main{padding:12px;max-width:1500px;margin:auto}
 .box p{margin:0 0 6px;white-space:pre-wrap}
 .feed{border-top:1px solid var(--line);padding-top:6px;margin-top:6px;font-size:14px}
 .feed small{color:var(--mut)}
-.mine{font-size:16px}
+.mine{font-size:16px;grid-row:span 2;display:flex;flex-direction:column}
+.mine textarea{flex:1;min-height:340px;font-size:16px;line-height:1.45}
 textarea{width:100%;min-height:70px;background:#0e1a3d;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;resize:vertical}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{border-radius:6px;padding:3px 7px;background:#0e1a3d;border:1px solid var(--line);font-size:13px;text-align:center}
@@ -80,7 +81,7 @@ tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
 .arkiv .races button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
 .arkiv .races button.on{background:var(--acc);color:#04202e;font-weight:600}
 .note{color:var(--mut);font-size:13px}
-@media(max-width:820px){.layout{grid-template-columns:1fr}.list{position:static;max-height:170px}.grid{grid-template-columns:1fr}.big{font-size:44px}.nm{font-size:24px}.nav{width:100%}.nav button{flex:1}}
+@media(max-width:820px){.mine{grid-row:auto}.mine textarea{min-height:240px}.layout{grid-template-columns:1fr}.list{position:static;max-height:170px}.grid{grid-template-columns:1fr}.big{font-size:44px}.nm{font-size:24px}.nav{width:100%}.nav button{flex:1}}
 .listbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
 .listbar select,.imp select,.imp input{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit}
 .listbar button,.imp button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
@@ -109,7 +110,7 @@ tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
   <datalist id="dl"></datalist>
 </header>
 <main id="app"></main>
-<script src="data.js?v=20261114085831"></script>
+<script src="data.js?v=20261114090334"></script>
 <script>
 const D = window.ALPIN_DATA;
 const SEX = {K:'Kvinner', M:'Menn'};
