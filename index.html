@@ -120,7 +120,7 @@ tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
   <datalist id="dl"></datalist>
 </header>
 <main id="app"></main>
-<script src="data.js?v=20261114172049"></script>
+<script src="data.js?v=20261115110334"></script>
 <script>
 const D = window.ALPIN_DATA;
 /* Resultater lest fra FIS-PDF (foreløpige, lagret i nettleseren). Legges inn blant rennene, men aldri oppå et renn som FIS-dataene allerede har. */
@@ -944,7 +944,7 @@ function kort(){
    <div class="card">
     <div class="top">
       <div class="big">${nr??'–'}</div>
-      <div><div class="nm">${esc(a.name)}</div><div class="sub">${esc(a.land||'')}${a.alder?' · '+a.alder+' år':''} · ${DISC[S.disc]}${nr==null?' · <span style="color:var(--gul)">ikke på '+(activeList()?'den innlimte startlisten':'startlisten '+NOW+' i denne disiplinen')+'</span>':''}${exText(a)}${a.gjest?' · <span style="color:var(--gul)">ny utøver, ikke i basen (ingen historikk)</span>':''}${otherDisc.length?' · kjører også '+otherDisc.map(d=>`<a href="#" data-d="${d}" style="color:var(--acc)">${DISC[d].split(' ')[0]}</a>`).join(', '):''}</div></div>
+      <div><div class="nm">${esc(a.name)}</div><div class="sub">${esc(a.land||'')}${a.alder?' · '+(a.alderca?'ca. ':'')+a.alder+' år':''} · ${DISC[S.disc]}${nr==null?' · <span style="color:var(--gul)">ikke på '+(activeList()?'den innlimte startlisten':'startlisten '+NOW+' i denne disiplinen')+'</span>':''}${exText(a)}${a.gjest?' · <span style="color:var(--gul)">ny utøver, ikke i basen (ingen historikk)</span>':''}${otherDisc.length?' · kjører også '+otherDisc.map(d=>`<a href="#" data-d="${d}" style="color:var(--acc)">${DISC[d].split(' ')[0]}</a>`).join(', '):''}</div></div>
       <div class="nav"><button id="bp">◀</button><button id="bn">▶</button></div>
     </div>
     ${cupStrip(a)}
