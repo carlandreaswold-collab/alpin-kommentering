@@ -492,7 +492,7 @@ function chip(x){
   const v=x.v; let cls='chip', txt=v;
   if(v===1) cls+=' p1'; else if(num(v)&&v<=3) cls+=' pod'; else if(num(v)&&v<=10) cls+=' t10'; else if(!num(v)) cls+=' st';
   if(!num(v)) txt = String(v).replace(/^DNF\d$/,'DNF');
-  return `<div class="${cls}" title="${esc(x.date||'')}"><b>${esc(txt)}</b><i>${esc(raceLabel(x))}${x.date&&x.wc?' · '+x.date.slice(5).replace('-','.'):''}${x.prelim?' · <span style="color:var(--gul)">foreløpig</span>':''}</i></div>`;
+  return `<div class="${cls}" title="${esc(x.date||'')}"><b>${esc(txt)}</b><i>${esc(raceLabel(x))}${x.date&&x.wc?' · '+datoOrd(x.date):''}${x.prelim?' · <span style="color:var(--gul)">foreløpig</span>':''}</i></div>`;
 }
 function spark(a){
   const pts=results(a).filter(x=>grp(x.disc)===S.disc && started(x));
@@ -538,7 +538,7 @@ function spark(a){
 function medalRow(p){
   const cls=p.v===1?'p1':'pod', ic=p.v===1?'🥇':p.v===2?'🥈':'🥉';
   const mg=tMargin(p), af=tAfter(p), tm = mg!=null ? `vant med ${fmt(mg)}` : af!=null ? `+${fmt(af)} bak vinneren` : '';
-  return `<div class="chip ${cls}"><b>${ic} ${p.v}.</b>${tm?`<i style="color:var(--tx)">${tm}</i>`:''}<i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?p.date:p.season}</i></div>`;
+  return `<div class="chip ${cls}"><b>${ic} ${p.v}.</b>${tm?`<i style="color:var(--tx)">${tm}</i>`:''}<i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?datoOrd(p.date):p.season}</i></div>`;
 }
 const SISTE_N = 8;
 const MND = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
