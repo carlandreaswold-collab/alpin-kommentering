@@ -538,6 +538,13 @@ function medalRow(p){
   const mg=tMargin(p), af=tAfter(p), tm = mg!=null ? `vant med ${fmt(mg)}` : af!=null ? `+${fmt(af)} bak vinneren` : '';
   return `<div class="chip ${cls}"><b>${ic} ${p.v}.</b>${tm?`<i style="color:var(--tx)">${tm}</i>`:''}<i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?p.date:p.season}</i></div>`;
 }
+const SISTE_N = 8;
+function sisteRenn(a){
+  const r=results(a).filter(x=>x.wc&&!x.champ&&x.season===NOW&&x.date&&started(x)).sort((p,q)=>q.date.localeCompare(p.date)).slice(0,SISTE_N);
+  if(!r.length) return '<div class="note">Ingen renn kjørt i '+NOW+' ennå.</div>';
+  const chipD=x=>chip(x).replace('<i>','<i>'+esc(DSHORT[x.disc]||x.disc)+' · ');
+  return `<div class="chips">${r.map(chipD).join('')}</div><div class="note">Nyeste først, på tvers av disipliner. Utgått (DNF/DQ) er med; ikke-start (DNS) er utelatt.</div>`;
+}
 function stats(a){
   const all=results(a).filter(started);
   const seasons=[...new Set(all.filter(x=>!x.champ).map(x=>x.season))].sort();
@@ -963,6 +970,7 @@ function kort(){
       ${faktaBox(a)}
       <div class="box wide"><h3>Formkurve (${DISC[S.disc]})</h3>${spark(a)}</div>
       <div class="box wide"><h3>Pallplasser og statistikk</h3>${stats(a)}</div>
+      <div class="box wide"><h3>Siste ${SISTE_N} renn i ${NOW} (alle disipliner)</h3>${sisteRenn(a)}</div>
       <div class="box wide"><h3>Sesongen ${NOW}</h3>${chips(NOW)}<div class="disc">Sist sesong ${PREV}</div>${chips(PREV)}</div>
     </div>
     <div class="upnext">Neste: ${nxt.map(x=>`<a data-id="${x.id}">${bibOf(x)} ${esc(x.name)} (${esc(x.land||'')})</a>`).join('')||'–'}</div>
