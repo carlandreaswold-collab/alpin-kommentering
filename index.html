@@ -40,6 +40,7 @@ main{padding:12px;max-width:1500px;margin:auto}
 .box.nyhet{border-color:#6b5a1d}.box.nyhet h3{color:var(--gul)}
 .box.fakta{border-color:#2f6b4f}.box.fakta h3{color:#6fe3a8}.box.fakta ul{margin:6px 0 0;padding-left:18px}.box.fakta li{margin:0 0 5px}.box.fakta select{background:#0e1a3d;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:2px 4px;margin-left:6px;font:inherit;font-size:13px;text-transform:none;letter-spacing:0}.box.fakta .fs{font-size:11px;color:var(--mut,#8fa0c8);margin-top:6px}
 .box.siste{background:#2c5aa8;border-color:#7fb4ff}.box.siste h3{color:#fff}.box.siste .note{color:#d6e4ff}
+.chip[data-goto]{cursor:pointer}.chip[data-goto]:hover{border-color:#fff}
 .gardin{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;cursor:grab;scrollbar-color:#9cc4ff transparent}.gardin.drar{cursor:grabbing;user-select:none}.gardin .chip{flex:none;min-width:132px;cursor:pointer}.gardin .chip:hover{border-color:#fff}.gardin .chip b{font-size:17px}.gardin .chip i{display:block;white-space:nowrap}.gardin .bak{color:var(--gul)}tr.hl td{outline:2px solid var(--gul);outline-offset:-2px}
 .box p{margin:0 0 6px;white-space:pre-wrap}
 .feed{border-top:1px solid var(--line);padding-top:6px;margin-top:6px;font-size:14px}
@@ -492,7 +493,8 @@ function chip(x){
   const v=x.v; let cls='chip', txt=v;
   if(v===1) cls+=' p1'; else if(num(v)&&v<=3) cls+=' pod'; else if(num(v)&&v<=10) cls+=' t10'; else if(!num(v)) cls+=' st';
   if(!num(v)) txt = String(v).replace(/^DNF\d$/,'DNF');
-  return `<div class="${cls}" title="${esc(x.date||'')}"><b>${esc(txt)}</b><i>${esc(raceLabel(x))}${x.date&&x.wc?' · '+datoOrd(x.date):''}${x.prelim?' · <span style="color:var(--gul)">foreløpig</span>':''}</i></div>`;
+  const go = x.rid ? ` data-goto="${esc(x.rid)}" data-aid="${esc(S.id)}"` : '';
+  return `<div class="${cls}"${go} title="${esc(x.rid?'Åpne hele resultatlisten':(x.date||''))}"><b>${esc(txt)}</b><i>${esc(raceLabel(x))}${x.date&&x.wc?' · '+datoOrd(x.date):''}${x.prelim?' · <span style="color:var(--gul)">foreløpig</span>':''}</i></div>`;
 }
 function spark(a){
   const pts=results(a).filter(x=>grp(x.disc)===S.disc && started(x));
