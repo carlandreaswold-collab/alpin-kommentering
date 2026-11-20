@@ -39,6 +39,7 @@ main{padding:12px;max-width:1500px;margin:auto}
 .box h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--acc)}
 .box.nyhet{border-color:#6b5a1d}.box.nyhet h3{color:var(--gul)}
 .box.fakta{border-color:#2f6b4f}.box.fakta h3{color:#6fe3a8}.box.fakta ul{margin:6px 0 0;padding-left:18px}.box.fakta li{margin:0 0 5px}.box.fakta select{background:#0e1a3d;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:2px 4px;margin-left:6px;font:inherit;font-size:13px;text-transform:none;letter-spacing:0}.box.fakta .fs{font-size:11px;color:var(--mut,#8fa0c8);margin-top:6px}
+.box.siste{background:#2c5aa8;border-color:#7fb4ff}.box.siste h3{color:#fff}.box.siste .note{color:#d6e4ff}
 .box p{margin:0 0 6px;white-space:pre-wrap}
 .feed{border-top:1px solid var(--line);padding-top:6px;margin-top:6px;font-size:14px}
 .feed small{color:var(--mut)}
@@ -969,8 +970,8 @@ function kort(){
       </div>
       ${faktaBox(a)}
       <div class="box wide"><h3>Formkurve (${DISC[S.disc]})</h3>${spark(a)}</div>
+      <div class="box wide siste"><h3>Siste ${SISTE_N} renn i ${NOW} (alle disipliner)</h3>${sisteRenn(a)}</div>
       <div class="box wide"><h3>Pallplasser og statistikk</h3>${stats(a)}</div>
-      <div class="box wide"><h3>Siste ${SISTE_N} renn i ${NOW} (alle disipliner)</h3>${sisteRenn(a)}</div>
       <div class="box wide"><h3>Sesongen ${NOW}</h3>${chips(NOW)}<div class="disc">Sist sesong ${PREV}</div>${chips(PREV)}</div>
     </div>
     <div class="upnext">Neste: ${nxt.map(x=>`<a data-id="${x.id}">${bibOf(x)} ${esc(x.name)} (${esc(x.land||'')})</a>`).join('')||'–'}</div>
