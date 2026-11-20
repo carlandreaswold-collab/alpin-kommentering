@@ -540,7 +540,8 @@ function spark(a){
 function medalRow(p){
   const cls=p.v===1?'p1':'pod', ic=p.v===1?'🥇':p.v===2?'🥈':'🥉';
   const mg=tMargin(p), af=tAfter(p), tm = mg!=null ? `vant med ${fmt(mg)}` : af!=null ? `+${fmt(af)} bak vinneren` : '';
-  return `<div class="chip ${cls}"><b>${ic} ${p.v}.</b>${tm?`<i style="color:var(--tx)">${tm}</i>`:''}<i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?datoOrd(p.date):p.season}</i></div>`;
+  const go = p.rid ? ` data-goto="${esc(p.rid)}" data-aid="${esc(S.id)}" title="Åpne hele resultatlisten"` : '';
+  return `<div class="chip ${cls}"${go}><b>${ic} ${p.v}.</b>${tm?`<i style="color:var(--tx)">${tm}</i>`:''}<i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?datoOrd(p.date):p.season}</i></div>`;
 }
 const SISTE_N = 8;
 const MND = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
