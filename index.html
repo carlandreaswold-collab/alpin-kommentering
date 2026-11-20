@@ -40,6 +40,7 @@ main{padding:12px;max-width:1500px;margin:auto}
 .box.nyhet{border-color:#6b5a1d}.box.nyhet h3{color:var(--gul)}
 .box.fakta{border-color:#2f6b4f}.box.fakta h3{color:#6fe3a8}.box.fakta ul{margin:6px 0 0;padding-left:18px}.box.fakta li{margin:0 0 5px}.box.fakta select{background:#0e1a3d;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:2px 4px;margin-left:6px;font:inherit;font-size:13px;text-transform:none;letter-spacing:0}.box.fakta .fs{font-size:11px;color:var(--mut,#8fa0c8);margin-top:6px}
 .box.siste{background:#2c5aa8;border-color:#7fb4ff}.box.siste h3{color:#fff}.box.siste .note{color:#d6e4ff}
+.gardin{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;cursor:grab;scrollbar-color:#9cc4ff transparent}.gardin.drar{cursor:grabbing;user-select:none}.gardin .chip{flex:none;min-width:132px;cursor:pointer}.gardin .chip:hover{border-color:#fff}.gardin .chip b{font-size:17px}.gardin .chip i{display:block;white-space:nowrap}.gardin .bak{color:var(--gul)}tr.hl td{outline:2px solid var(--gul);outline-offset:-2px}
 .box p{margin:0 0 6px;white-space:pre-wrap}
 .feed{border-top:1px solid var(--line);padding-top:6px;margin-top:6px;font-size:14px}
 .feed small{color:var(--mut)}
@@ -401,7 +402,7 @@ const tAfter = x => (x.t!=null && x.w!=null && x.v>1) ? x.t-x.w : null;        /
 const tMargin = x => (x.v===1 && x.t!=null && x.s!=null) ? x.s-x.t : null;      // seiersmargin til nr. 2
 const timeHead = r => r&&r._hasT ? `<th class="r tid">Sluttid</th><th class="r bak">Bak</th>${r.res.some(x=>x.length>4)?'<th class="r omg">1. omg.</th><th class="r omg">2. omg.</th>':''}` : '';
 const timeCells = (x,r) => r&&r._hasT ? `<td class="r tid">${fmt(x.t)}</td><td class="r bak">${x.v===1?'':fdiff(x.t!=null&&r._w!=null?x.t-r._w:null)}</td>${r.res.some(y=>y.length>4)?`<td class="r omg">${fmt(x.r1)}</td><td class="r omg">${fmt(x.r2)}</td>`:''}` : '';
-if(D.wc) D.wc.races.forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({date:r.date,season:r.season,disc:r.disc,race:r.place,v,wc:true,t,r1,r2,w:r._w,s:r._s,prelim:r.prelim})));
+if(D.wc) D.wc.races.forEach(r=>r.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({rid:r.id,date:r.date,season:r.season,disc:r.disc,race:r.place,v,wc:true,t,r1,r2,w:r._w,s:r._s,prelim:r.prelim})));
 /* ---------- Cupstilling: regnet av resultatene (samme data som pall og formkurve), så den oppdateres likt for PDF og FIS-henting ----------
    Kontrolleres mot FIS' stillingsside (bygg/kontroll_cup.py) og mot PDF-ens egen stilling ved import. FIS fjerner noen poeng i sesongfinalen (mars): da kan FIS ha færre poeng enn vi regner. */
 const PTS=[100,80,60,50,45,40,36,32,29,26,24,22,20,18,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1];
@@ -461,7 +462,7 @@ function cupVsPdf(text, info, rows, M, race){   // → {ok:[], warn:[]}: regnet 
 }
 function liveAdd(p){ cupCache={};   // legger et foreløpig PDF-renn inn i løpende data uten omlasting
   D.wc.races.push(p); prep(p);
-  p.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({date:p.date,season:p.season,disc:p.disc,race:p.place,v,wc:true,t,r1,r2,w:p._w,s:p._s,prelim:1}));
+  p.res.forEach(([fid,v,t,r1,r2])=>(wcBy[fid]=wcBy[fid]||[]).push({rid:p.id,date:p.date,season:p.season,disc:p.disc,race:p.place,v,wc:true,t,r1,r2,w:p._w,s:p._s,prelim:1}));
   for(const k of Object.keys(resCache)) delete resCache[k];
 }
 const chBy = {};
@@ -540,11 +541,19 @@ function medalRow(p){
   return `<div class="chip ${cls}"><b>${ic} ${p.v}.</b>${tm?`<i style="color:var(--tx)">${tm}</i>`:''}<i>${esc(raceLabel(p))} · ${DSHORT[grp(p.disc)==='FART'&&!p.wc?'FART':p.disc]} · ${p.date&&p.wc?p.date:p.season}</i></div>`;
 }
 const SISTE_N = 8;
+const MND = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
+const datoOrd = d => d ? `${+d.slice(8)}. ${MND[+d.slice(5,7)-1]} ${d.slice(0,4)}` : '';
 function sisteRenn(a){
   const r=results(a).filter(x=>x.wc&&!x.champ&&x.season===NOW&&x.date&&started(x)).sort((p,q)=>q.date.localeCompare(p.date)).slice(0,SISTE_N);
   if(!r.length) return '<div class="note">Ingen renn kjørt i '+NOW+' ennå.</div>';
-  const chipD=x=>chip(x).replace('<i>','<i>'+esc(DSHORT[x.disc]||x.disc)+' · ');
-  return `<div class="chips">${r.map(chipD).join('')}</div><div class="note">Nyeste først, på tvers av disipliner. Utgått (DNF/DQ) er med; ikke-start (DNS) er utelatt.</div>`;
+  const card=x=>{
+    const v=x.v; let cls='chip rc', txt=v;
+    if(v===1) cls+=' p1'; else if(num(v)&&v<=3) cls+=' pod'; else if(num(v)&&v<=10) cls+=' t10'; else if(!num(v)) cls+=' st';
+    if(!num(v)) txt=String(v).replace(/^DNF\d$/,'DNF');
+    const mg=tMargin(x), af=tAfter(x), tm = mg!=null ? `vant med ${fmt(mg)}` : af!=null ? `+${fmt(af)} bak vinneren` : '';
+    return `<div class="${cls}" ${x.rid?`data-goto="${esc(x.rid)}" data-aid="${esc(a.id)}" title="Åpne hele resultatlisten"`:''}><b>${esc(txt)}</b><i style="color:var(--tx)">${esc(DSHORT[x.disc]||x.disc)} · ${esc(x.race)}</i><i>${datoOrd(x.date)}${x.prelim?' · <span style="color:var(--gul)">foreløpig</span>':''}</i>${tm?`<i class="bak">${tm}</i>`:''}</div>`;
+  };
+  return `<div class="gardin">${r.map(card).join('')}</div><div class="note">Nyeste først, på tvers av disipliner. Dra eller rull sidelengs; trykk et renn for å se hele resultatlisten. Utgått (DNF/DQ) er med; ikke-start (DNS) er utelatt.</div>`;
 }
 function stats(a){
   const all=results(a).filter(started);
@@ -1075,9 +1084,10 @@ function step(d){
 }
 // dra formkurven sidelengs med musa
 let drag=null;
-app.addEventListener('pointerdown',e=>{ const sc=e.target.closest('.spk-scroll'); if(!sc||e.pointerType==='touch') return; drag={sc,x:e.clientX,l:sc.scrollLeft}; sc.classList.add('drar'); });
-window.addEventListener('pointermove',e=>{ if(drag) drag.sc.scrollLeft=drag.l-(e.clientX-drag.x); });
-window.addEventListener('pointerup',()=>{ if(drag){ drag.sc.classList.remove('drar'); drag=null; } });
+app.addEventListener('pointerdown',e=>{ const sc=e.target.closest('.spk-scroll,.gardin'); if(!sc||e.pointerType==='touch') return; drag={sc,x:e.clientX,l:sc.scrollLeft,moved:false}; sc.classList.add('drar'); });
+window.addEventListener('pointermove',e=>{ if(drag){ drag.sc.scrollLeft=drag.l-(e.clientX-drag.x); if(Math.abs(e.clientX-drag.x)>5) drag.moved=true; } });
+let justDragged=false;
+window.addEventListener('pointerup',()=>{ if(drag){ justDragged=drag.moved; setTimeout(()=>justDragged=false,0); drag.sc.classList.remove('drar'); drag=null; } });
 window.addEventListener('paste',e=>{   // lim inn selve PDF-filen (kopiert i Filutforsker/Finder) eller et skjermbilde-/filutklipp
   const fs=[...((e.clipboardData&&e.clipboardData.files)||[])];
   if(fs.length){ e.preventDefault(); importFiles(fs); return; }
@@ -1117,6 +1127,11 @@ app.addEventListener('click',e=>{
   if(e.target.id==='bn') return step(1);
   const it=e.target.closest('[data-id]'); if(it){ S.id=it.dataset.id; const a=byId[S.id]; S.sex=a.sex;
     S.tab='kort'; render(); return }
+  const go=e.target.closest('[data-goto]'); if(go){ if(justDragged) return;
+    const rc=((D.wc&&D.wc.races)||[]).find(x=>x.id===go.dataset.goto); if(!rc) return;
+    S.tab='arkiv'; S.sex=rc.sex; S.disc=(rc.disc==='CE'||rc.disc==='PAR')?'SL':grp(rc.disc); S.season=rc.season; S.rid=rc.id; render();
+    const row=document.querySelector(`tr[data-id="${go.dataset.aid}"]`); if(row){ row.classList.add('hl'); row.scrollIntoView({block:'center'}); } else window.scrollTo(0,0);
+    return; }
   const r=e.target.closest('[data-r]'); if(r){S.rid=r.dataset.r;render()}
 });
 document.addEventListener('keydown',e=>{
