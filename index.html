@@ -40,7 +40,7 @@ main{padding:12px;max-width:1500px;margin:auto}
 .box.nyhet{border-color:#6b5a1d}.box.nyhet h3{color:var(--gul)}
 .box.fakta{border-color:#2f6b4f}.box.fakta h3{color:#6fe3a8}.box.fakta ul{margin:6px 0 0;padding-left:18px}.box.fakta li{margin:0 0 5px}.box.fakta select{background:#0e1a3d;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:2px 4px;margin-left:6px;font:inherit;font-size:13px;text-transform:none;letter-spacing:0}.box.fakta .fs{font-size:11px;color:var(--mut,#8fa0c8);margin-top:6px}
 .box.siste{background:#2c5aa8;border-color:#7fb4ff}.box.siste h3{color:#fff}.box.siste .note{color:#d6e4ff}
-.chip[data-goto]{cursor:pointer}.chip[data-goto]:hover{border-color:#fff}
+tr.cupx td{background:#1c3a78;border-bottom:2px solid var(--acc)}tr.cx.open td{border-bottom:none}tr.cx a{color:inherit;text-decoration:underline dotted}tr.cx{cursor:pointer}tr.cx:hover td{background:var(--panel2)}.chip[data-goto]{cursor:pointer}.chip[data-goto]:hover{border-color:#fff}
 .gardin{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;cursor:grab;scrollbar-color:#9cc4ff transparent}.gardin.drar{cursor:grabbing;user-select:none}.gardin .chip{flex:none;min-width:132px;cursor:pointer}.gardin .chip:hover{border-color:#fff}.gardin .chip b{font-size:17px}.gardin .chip i{display:block;white-space:nowrap}.gardin .bak{color:var(--gul)}tr.hl td{outline:2px solid var(--gul);outline-offset:-2px}
 .box p{margin:0 0 6px;white-space:pre-wrap}
 .feed{border-top:1px solid var(--line);padding-top:6px;margin-top:6px;font-size:14px}
@@ -581,13 +581,13 @@ function stats(a){
     for(const x of results(a)) if(x.prelim&&!x.champ&&num(x.v)&&x.v<=3){ const k=String(2000+(+x.season.slice(3))); (POD[k]=POD[k]||[0,0,0])[x.v-1]++; nPre++; }
     const ss=Object.keys(POD).sort(), tot=ss.reduce((t,k)=>t.map((x,i)=>x+POD[k][i]),[0,0,0]);
     const sum=tot[0]+tot[1]+tot[2];
-    karriere = sum? `<div class="karriere"><b>Hele karrieren (verdenscup, FIS): ${sum} pallplasser</b> · ${tot[0]} seiere · ${tot[1]} andreplasser · ${tot[2]} tredjeplasser · første pall ${sl(ss[0])}${nPre?` <span style="color:var(--gul)">(inkl. ${nPre} foreløpig fra PDF, ikke kontrollert mot FIS)</span>`:''}
+    karriere = sum? `<div class="karriere"><b>Hele karrieren (verdenscup, FIS): ${sum} pallplasser</b> · ${tot[0]} seiere · ${tot[1]} andreplasser · ${tot[2]} tredjeplasser · første pall ${sl(ss[0])}
       <details><summary>Per sesong</summary><div class="chips">${ss.map(k=>`<div class="chip ${POD[k][0]?'p1':'pod'}"><b>${POD[k][0]+POD[k][1]+POD[k][2]}</b><i>${sl(k)} · ${POD[k].join('-')}</i></div>`).join('')}</div><div class="note">Tall per sesong: 1.-2.-3. plass.</div></details></div>`
       : '<div class="karriere note">Ingen verdenscuppallplasser i karrieren (FIS).</div>';
   }
   const nPre=inScope.filter(x=>x.prelim).length;
   return `${knapper}
-  ${nPre?`<div class="warn">⚠ ${nPre} renn i dette utvalget er lest fra PDF og ikke kontrollert mot FIS ennå (merket «foreløpig»). Tallene under inkluderer dem. «Hele karrieren» (FIS) er uten.</div>`:''}
+  ${nPre?`<div class="warn">⚠ ${nPre} renn i dette utvalget er lest fra PDF og ikke kontrollert mot FIS ennå (merket «foreløpig»). Tallene under og «Hele karrieren» inkluderer dem.</div>`:''}
   ${karriere}
   <div class="stat big2"><div><b class="gul">${pods.length}</b>pallplasser</div><div><b>${wins}</b>seiere</div><div><b>${t10}</b>topp 10</div><div><b>${best}</b>beste plass</div><div><b>${snitt}</b>snitt (i mål)</div><div><b>${dnf}</b>utgått</div><div><b>${ns.length}/${wc.length}</b>i mål / start</div>${ch.length?`<div><b>${ch.length}</b>OL/VM-pall</div>`:''}</div>
   <div class="disc">Pallplasser i verdenscupen, alle disipliner (${scope==='total'?'alle sesonger i dataene':scope})</div>
@@ -992,6 +992,15 @@ function kort(){
   return html;
 }
 function cupStripLabel(C){ return C.last?`etter ${esc(C.last.place)} ${DSHORT[C.last.disc]||C.last.disc} ${C.last.date.slice(8)}.${C.last.date.slice(5,7)}${C.pre?' (inkl. foreløpig PDF-resultat)':''}`:'ingen renn ennå'; }
+// Rennene som ga cuppoeng for en utøver (samme regel som cupCalc), nyeste først, hvert kort åpner resultatlisten
+function cupRaces(o,a,cup){
+  const r=((D.wc&&D.wc.races)||[]).filter(x=>x.sex===S.sex&&x.season===NOW&&x.disc!=='CE'&&x.disc!=='PAR'&&(cup==='ALL'||x.disc===cup))
+    .map(x=>{ const row=x.res.find(q=>q[0]===o.fid); return row&&num(row[1])&&row[1]>=1&&row[1]<=30 ? {x,v:row[1]} : null; }).filter(Boolean)
+    .sort((p,q)=>q.x.date.localeCompare(p.x.date));
+  const cls=v=>v===1?'p1':v<=3?'pod':v<=10?'t10':'';
+  return `<tr class="cupx"><td></td><td colspan="6"><div class="gardin">${r.map(({x,v})=>`<div class="chip rc ${cls(v)}" data-goto="${esc(x.id)}" data-aid="${esc(a?a.id:'')}" title="Åpne hele resultatlisten"><b>${v}. plass</b><i style="color:var(--tx)">${esc(DSHORT[x.disc]||x.disc)} · ${esc(x.place)}</i><i>${datoOrd(x.date)}${x.prelim?' · <span style="color:var(--gul)">foreløpig</span>':''}</i><i class="bak">+${PTS[v-1]} poeng</i></div>`).join('')}</div>
+    <div class="note">${r.length} renn ga ${o.pts} poeng. Trykk et renn for resultatlisten${a&&a.aktiv?', eller det blå navnet for utøverkortet':''}.</div></td></tr>`;
+}
 function cupTab(){
   const cup=CUPS[S.cup]?S.cup:'ALL', C=cupCalc(S.sex,NOW), t=C.T[cup], lead=t.rows[0]?t.rows[0].pts:0;
   const rows=S.showAllCup?t.rows:t.rows.slice(0,30);
@@ -1001,7 +1010,7 @@ function cupTab(){
     ${C.pre?'<div class="warn">⚠ Stillingen inkluderer renn lest fra PDF som ikke er kontrollert mot FIS-databasen ennå.</div>':''}
     ${C.cepar?'<div class="warn">⚠ Sesongen har city event/parallellrenn. De er ikke regnet med i poengene her: sjekk mot FIS.</div>':''}
     ${t.rows.length?`<table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th><th class="r">Poeng</th><th class="r">Bak leder</th><th class="r">Renn med poeng</th><th class="r">Seiere</th></tr>
-    ${rows.map(o=>{ const a=fidToAth[o.fid]; return `<tr class="${a&&a.aktiv?'go':'inakt'}${o.rank<=3?' p'+o.rank:''}"${a&&a.aktiv?` data-id="${a.id}"`:''}><td class="r">${o.rank}</td><td>${esc(a?a.name:'FIS '+o.fid)}</td><td>${esc(a?a.land||'':'')}</td><td class="r"><b>${o.pts}</b></td><td class="r">${o.rank===1?'':'−'+(lead-o.pts)}</td><td class="r">${o.n}</td><td class="r">${o.w||''}</td></tr>`; }).join('')}</table>
+    ${rows.map(o=>{ const a=fidToAth[o.fid], open=S.cupOpen===o.fid; return `<tr class="cx${a&&a.aktiv?' go':' inakt'}${o.rank<=3?' p'+o.rank:''}${open?' open':''}" data-cx="${esc(o.fid)}" title="Vis rennene som ga poeng"><td class="r">${o.rank}</td><td>${open?'▾':'▸'} ${a&&a.aktiv?`<a data-id="${esc(a.id)}" title="Åpne utøverkortet">${esc(a.name)}</a>`:esc(a?a.name:'FIS '+o.fid)}</td><td>${esc(a?a.land||'':'')}</td><td class="r"><b>${o.pts}</b></td><td class="r">${o.rank===1?'':'−'+(lead-o.pts)}</td><td class="r">${o.n}</td><td class="r">${o.w||''}</td></tr>${open?cupRaces(o,a,cup):''}`; }).join('')}</table>
     ${t.rows.length>30?`<button class="more" id="cupall">${S.showAllCup?'Vis bare topp 30':'Vis alle '+t.rows.length}</button>`:''}`:'<div class="note">Ingen poeng delt ut ennå.</div>'}
     <p class="note">Regnet av resultatene i basen (de samme som pall og formkurve), kontrollert mot FIS' stilling hver gang data hentes. Delt plass ved lik poengsum. Klikk et blått navn for utøverkortet.</p></div>`;
 }
@@ -1130,6 +1139,7 @@ app.addEventListener('click',e=>{
   if(e.target.id==='bn') return step(1);
   const it=e.target.closest('[data-id]'); if(it){ S.id=it.dataset.id; const a=byId[S.id]; S.sex=a.sex;
     S.tab='kort'; render(); return }
+  const cx=e.target.closest('[data-cx]'); if(cx){ S.cupOpen = S.cupOpen===cx.dataset.cx ? null : cx.dataset.cx; render(); return; }
   const go=e.target.closest('[data-goto]'); if(go){ if(justDragged) return;
     const rc=((D.wc&&D.wc.races)||[]).find(x=>x.id===go.dataset.goto); if(!rc) return;
     S.tab='arkiv'; S.sex=rc.sex; S.disc=(rc.disc==='CE'||rc.disc==='PAR')?'SL':grp(rc.disc); S.season=rc.season; S.rid=rc.id; render();
