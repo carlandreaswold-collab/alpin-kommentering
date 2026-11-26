@@ -150,9 +150,13 @@ const getHist = (a)=>{ try{ return JSON.parse(localStorage.getItem(histKey(a))||
    S.src['K'+'SL'] = id for aktiv liste, ellers arkets startnummer. */
 let LISTS = JSON.parse(localStorage.getItem('alpinLists')||'{}');
 const saveLists = ()=>localStorage.setItem('alpinLists', JSON.stringify(LISTS));
-function ensureGuests(){   // utøvere som ikke finnes i basen får et enkelt midlertidig kort
+let GUESTS = {}; try{ GUESTS = JSON.parse(localStorage.getItem('alpinGuests')||'{}'); }catch(e){}   // {FIS-kode: {id,sex,name,land,alder}}: utøvere fra PDF-er som ikke fantes i basen
+const saveGuests = ()=>localStorage.setItem('alpinGuests', JSON.stringify(GUESTS));
+function mkGuest(g){ return {id:g.id,sex:g.sex,name:g.name,land:g.land,alder:g.alder,start:{},info:{},notes:{},news:'',results:[],fid:g.fid||null,pod:null,aktiv:true,gjest:true}; }
+function ensureGuests(){
+  for(const g of Object.values(GUESTS)) if(!byId[g.id]){ const a=mkGuest(g); D.athletes.push(a); byId[a.id]=a; }   // utøvere som ikke finnes i basen får et enkelt midlertidig kort
   for(const L of Object.values(LISTS)) for(const x of L.e) if(x.g && !byId[x.id]){
-    const a={id:x.id,sex:L.sex,name:x.g.name,land:x.g.land,alder:x.g.alder,start:{},info:{},notes:{},news:'',results:[],fid:null,pod:null,aktiv:true,gjest:true};
+    const a=mkGuest({id:x.id,sex:L.sex,name:x.g.name,land:x.g.land,alder:x.g.alder,fid:x.g.fid});
     D.athletes.push(a); byId[a.id]=a;
   }
 }
@@ -310,11 +314,16 @@ function checkResults(R){
 function resultEntries(R){ const F=R.s.fin; return [...F.list,...F.dnf2,...F.dnq,...F.dnf1,...F.dns,...F.dsq]; }
 function resultRows(R, M){   // → [fid, plass|status, sluttid, omg1, omg2] som i data.js; utøvere uten kort tas ikke med
   const F=R.s.fin, byKey=new Map(M.map(x=>[x.bib+'|'+x.code,x])), rows=[], skipped=[];
-  const add=(x,v,full)=>{ const mm=byKey.get(x.bib+'|'+x.code); const a=mm&&mm.a; if(!a||!a.fid){ skipped.push(x.raw); return; } rows.push(full?[a.fid,v,x.t,x.r1,x.r2]:[a.fid,v]); };
+  const newG=[];
+  const add=(x,v,full)=>{ const mm=byKey.get(x.bib+'|'+x.code); const a=mm&&mm.a; let fid=a&&a.fid;
+    if(!fid){ if(!x.code){ skipped.push(x.raw); return; } fid='G'+x.code; if(!newG.some(g=>g.fid===fid)) newG.push({fid,id:'G:'+(R.info.sex||S.sex)+':'+x.code,sex:R.info.sex||S.sex,name:prettyName(x.raw),land:x.land,alder:2026-x.year}); }
+    rows.push(full?[fid,v,x.t,x.r1,x.r2]:[fid,v]); };
   F.list.forEach(x=>add(x,x.rank,true));
   F.dnf2.forEach(x=>add(x,'DNF2')); F.dnq.forEach(x=>add(x,'DNQ')); F.dnf1.forEach(x=>add(x,'DNF1')); F.dns.forEach(x=>add(x,'DNS')); F.dsq.forEach(x=>add(x,'DQ'));
   if(!(F.list[0]&&F.list[0].r1!=null)) rows.forEach(r=>{ if(r.length>2){ r.length=3; } });
-  return {rows,skipped};
+  // plass etter 1. omgang fra PDF-ens omgang 1-liste (alle som fullførte omg 1); utøvere som falt ut i omg 1 har ingen
+  const p1={}; for(const x of ((R.s.run1&&R.s.run1.list)||[])){ const mm=byKey.get(x.bib+'|'+x.code); const a=mm&&mm.a; const fid=(a&&a.fid)||(x.code?'G'+x.code:null); if(fid&&x.rank) p1[fid]=x.rank; }
+  return {rows,skipped,newG,p1};
 }
 function seasonOf(date){ const y=+date.slice(0,4), m=+date.slice(5,7), s=m>=7?y:y-1; return String(s).slice(2)+'/'+String(s+1).slice(2); }
 // Sammenlign med FIS-dataene hvis rennet allerede ligger der. Returnerer {finnes, like, avvik[]}
@@ -340,7 +349,10 @@ function matchEntries(entries, sex){
   const add=(m,k,a)=>{ if(!m.has(k)) m.set(k,[]); m.get(k).push(a); };
   for(const a of pool){ add(idx,_tok(a.name).sort().join(' '),a); add(idx2,_tok2(a.name).sort().join(' '),a); }
   const sub=(A,B)=>A.every(t=>B.includes(t));
+  const byCode=new Map(D.athletes.filter(a=>a.sex===sex&&a.gjest&&a.fid).map(a=>[String(a.fid),a]));   // nøkkel «G»+FIS-koden fra PDF-en (basen har bare FIS-id, ikke koden)
   return entries.map(e=>{
+    const ac=e.code&&byCode.get('G'+e.code);
+    if(ac) return Object.assign({}, e, {a:ac, how:'FIS-kode', landMismatch: ac.land && _lnd(ac.land)!==_lnd(e.land), ambiguous:false});
     const toks=_tok(e.raw), toks2=_tok2(e.raw);
     let c = idx.get(toks.slice().sort().join(' ')) || idx2.get(toks2.slice().sort().join(' ')) || [];
     let how = c.length?'navn':'';
@@ -394,6 +406,10 @@ const started = x => !NOTSTART.has(x.v);
 // Verdenscup fra FIS: oppslag per FIS-id
 const wcBy = {}, fidToAth = {};
 D.athletes.forEach(a=>{ if(a.fid) fidToAth[a.fid]=a; });
+/* Utøvere fra PDF-er som senere dukker opp som ordentlige FIS-kort (samme navn, kjønn og land): bruk FIS-kortet, ikke dublett. Gamle rader/lister med G-nøkkelen peker da til FIS-kortet. */
+(function(){ const key=a=>a.sex+'|'+_lnd(a.land||'')+'|'+_tok2(a.name).sort().join(' '), base=new Map(D.athletes.filter(a=>!a.gjest).map(a=>[key(a),a]));
+  for(const g of D.athletes.filter(a=>a.gjest&&a.fid&&/^G/.test(a.fid))){ const b=base.get(key(g)); if(!b) continue;
+    fidToAth[g.fid]=b; byId[g.id]=b; D.athletes.splice(D.athletes.indexOf(g),1); } })();
 // Tider fra FIS: res-rad = [fid, plass, sluttid, omg1, omg2] i hundredeler. Vinner- og toerertid per renn for differanser.
 function prep(r){ const w=r.res.find(x=>x[1]===1&&x.length>2), s2=r.res.find(x=>x[1]===2&&x.length>2); r._w=w?w[2]:null; r._s=s2?s2[2]:null; r._hasT=r.res.some(x=>x.length>2); }
 if(D.wc){ D.wc.races.forEach(prep); (D.wc.champs||[]).forEach(prep); }
@@ -450,7 +466,7 @@ function parsePdfCup(text){
 }
 function cupVsPdf(text, info, rows, M, race){   // → {ok:[], warn:[]}: regnet stilling mot PDF-ens stilling, for utøvere som kjørte rennet
   const P=parsePdfCup(text), ok=[], warn=[]; if(!P.ALL) return {ok,warn:['Fant ikke cupstillingen i PDF-en, så den er ikke kontrollert.']};
-  const code2fid=new Map(); for(const x of M) if(x.a&&x.a.fid) code2fid.set(x.code,x.a.fid);
+  const code2fid=new Map(); for(const x of M) if(x.a&&x.a.fid) code2fid.set(x.code,x.a.fid); else if(x.code) code2fid.set(x.code,'G'+x.code);
   const season=seasonOf(info.date), C=cupCalc(info.sex,season,race?[race]:[]), bad=[]; let n=0;
   for(const [cup,tab] of Object.entries(P)) for(const [code,[rk,pts]] of Object.entries(tab)){
     const fid=code2fid.get(code); if(!fid||!C.T[cup]) continue; n++;
@@ -636,17 +652,20 @@ function checkImport(R, sex, disc, run, lists, ocr){
   return {err,warn};
 }
 function buildListEntries(m,sex){
-  return m.slice().sort((p,q)=>p.bib-q.bib).map(x=>x.a?{bib:x.bib,id:x.a.id,ex:x.ex}:{bib:x.bib,id:listIdOf(x,sex),ex:x.ex,g:{name:prettyName(x.raw),land:x.land,alder:2026-x.year}});
+  return m.slice().sort((p,q)=>p.bib-q.bib).map(x=>x.a?{bib:x.bib,id:x.a.id,ex:x.ex}:{bib:x.bib,id:listIdOf(x,sex),ex:x.ex,g:{name:prettyName(x.raw),land:x.land,alder:2026-x.year,fid:'G'+x.code}});
 }
 
 /* ---------- Sikkerhetskopi (lister, valg av liste og notater) ---------- */
 function backupData(){
   const notes={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k.startsWith('alpinNote:')||k.startsWith('alpinNoteOld:')||k.startsWith('alpinNoteHist:')) notes[k]=localStorage.getItem(k); }
-  return {format:'alpin-kommentering-sikkerhetskopi', v:1, lagret:new Date().toISOString(), lists:LISTS, src:S.src||{}, notes};
+  return {format:'alpin-kommentering-sikkerhetskopi', v:2, lagret:new Date().toISOString(), lists:LISTS, src:S.src||{}, notes, results:PRES, guests:GUESTS};
 }
 function applyBackup(b){   // slår sammen; notater du har skrevet siden beholdes
   if(!b || b.format!=='alpin-kommentering-sikkerhetskopi' || typeof b.lists!=='object') throw new Error('Dette ser ikke ut som en sikkerhetskopi fra Alpin kommentering.');
-  const r={lister:0,notater:0,konflikter:0};
+  const r={lister:0,notater:0,konflikter:0,resultater:0,utovere:0};
+  for(const [k,v] of Object.entries(b.results||{})) if(!PRES[k]){ PRES[k]=v; r.resultater++; }   // innlimte PDF-resultater
+  for(const [k,v] of Object.entries(b.guests||{})) if(!GUESTS[k] && !fidToAth[k]){ GUESTS[k]=v; r.utovere++; }
+  if(r.resultater) savePres(); if(r.utovere) saveGuests();
   for(const [k,L] of Object.entries(b.lists)){ if(!LISTS[k]) r.lister++; LISTS[k]=L; }
   for(const [k,v] of Object.entries(b.notes||{})){ const cur=localStorage.getItem(k); if(!cur){ localStorage.setItem(k,v); r.notater++; } else if(cur!==v) r.konflikter++; }
   S.src=Object.assign({},b.src||{},S.src||{});
@@ -869,7 +888,8 @@ function impChanged(id,v){   // endret kjønn/disiplin/omgang i forhåndsvisning
 function processResultsText(text){
   const R=parseResults(text), sex=R.info.sex||S.sex;
   const M=matchEntries(resultEntries(R),sex), rr=resultRows(R,M), C=checkResults(R);
-  if(rr.skipped.length) C.warn.push(`${rr.skipped.length} utøvere finnes ikke som kort i basen og er ikke lagt inn: ${rr.skipped.slice(0,6).join(', ')}${rr.skipped.length>6?' …':''}`);
+  if(rr.skipped.length) C.warn.push(`${rr.skipped.length} utøvere mangler FIS-kode i PDF-en og er ikke lagt inn: ${rr.skipped.slice(0,6).join(', ')}${rr.skipped.length>6?' …':''}`);
+  if(rr.newG.length) C.warn.push(`${rr.newG.length} utøvere finnes ikke i basen og får nytt kort (uten historikk) når du tar resultatet i bruk: ${rr.newG.slice(0,6).map(g=>g.name).join(', ')}${rr.newG.length>6?' …':''}`);
   const lik=M.filter(x=>x.a&&x.how==='lik navn'); if(lik.length) C.warn.push('Lik stavemåte, sjekk at det er riktig person: '+lik.map(x=>prettyName(x.raw)+' → '+x.a.name).join('; '));
   const lm=M.filter(x=>x.landMismatch); if(lm.length) C.warn.push('Land stemmer ikke med kortet for: '+lm.slice(0,5).map(x=>prettyName(x.raw)).join(', '));
   const am=M.filter(x=>x.ambiguous); if(am.length) C.warn.push('Flere mulige kort for: '+am.slice(0,5).map(x=>prettyName(x.raw)).join(', '));
@@ -882,8 +902,10 @@ function processResultsText(text){
 function useResults(){
   const {R,rr,C,cmp}=IMP.rr, I=R.info;
   if(C.err.length||cmp||!rr.rows.length) return;
+  for(const g of rr.newG){ if(!fidToAth[g.fid]){ GUESTS[g.fid]=g; const a=mkGuest(g); D.athletes.push(a); byId[a.id]=a; fidToAth[g.fid]=a; } } saveGuests();
   const id='P'+I.date+I.sex+I.disc, again=!!PRES[id];
   PRES[id]={id,date:I.date,sex:I.sex,disc:I.disc,place:I.place,nat:I.nat||'',season:seasonOf(I.date),prelim:1,t:Date.now(),file:IMP.fileName||'',res:rr.rows,x:{tech:R.tech,cond:R.cond}};
+  if(Object.keys(rr.p1).length>=10 && rr.rows.some(r=>r.length>4)) PRES[id].p1=rr.p1;   // bare tos-omgangsrenn med hel omgang 1-liste
   savePres();
   S.tab='arkiv'; S.sex=I.sex; S.disc=grp(I.disc); S.season=PRES[id].season; S.rid=id; S.id=null;
   const rest=IMP.queue||[]; IMP=null; save();
@@ -999,7 +1021,7 @@ function cupRaces(o,a,cup){
     .sort((p,q)=>q.x.date.localeCompare(p.x.date));
   const cls=v=>v===1?'p1':v<=3?'pod':v<=10?'t10':'';
   return `<tr class="cupx"><td></td><td colspan="6"><div class="gardin">${r.map(({x,v})=>`<div class="chip rc ${cls(v)}" data-goto="${esc(x.id)}" data-aid="${esc(a?a.id:'')}" title="Åpne hele resultatlisten"><b>${v}. plass</b><i style="color:var(--tx)">${esc(DSHORT[x.disc]||x.disc)} · ${esc(x.place)}</i><i>${datoOrd(x.date)}${x.prelim?' · <span style="color:var(--gul)">foreløpig</span>':''}</i><i class="bak">+${PTS[v-1]} poeng</i></div>`).join('')}</div>
-    <div class="note">${r.length} renn ga ${o.pts} poeng. Trykk et renn for resultatlisten${a&&a.aktiv?', eller det blå navnet for utøverkortet':''}.</div></td></tr>`;
+    <div class="note">${r.length} renn ga ${o.pts} poeng. Trykk et renn for resultatlisten${a?', eller navnet for utøverkortet':''}.</div></td></tr>`;
 }
 function cupTab(){
   const cup=CUPS[S.cup]?S.cup:'ALL', C=cupCalc(S.sex,NOW), t=C.T[cup], lead=t.rows[0]?t.rows[0].pts:0;
@@ -1010,7 +1032,7 @@ function cupTab(){
     ${C.pre?'<div class="warn">⚠ Stillingen inkluderer renn lest fra PDF som ikke er kontrollert mot FIS-databasen ennå.</div>':''}
     ${C.cepar?'<div class="warn">⚠ Sesongen har city event/parallellrenn. De er ikke regnet med i poengene her: sjekk mot FIS.</div>':''}
     ${t.rows.length?`<table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th><th class="r">Poeng</th><th class="r">Bak leder</th><th class="r">Renn med poeng</th><th class="r">Seiere</th></tr>
-    ${rows.map(o=>{ const a=fidToAth[o.fid], open=S.cupOpen===o.fid; return `<tr class="cx${a&&a.aktiv?' go':' inakt'}${o.rank<=3?' p'+o.rank:''}${open?' open':''}" data-cx="${esc(o.fid)}" title="Vis rennene som ga poeng"><td class="r">${o.rank}</td><td>${open?'▾':'▸'} ${a&&a.aktiv?`<a data-id="${esc(a.id)}" title="Åpne utøverkortet">${esc(a.name)}</a>`:esc(a?a.name:'FIS '+o.fid)}</td><td>${esc(a?a.land||'':'')}</td><td class="r"><b>${o.pts}</b></td><td class="r">${o.rank===1?'':'−'+(lead-o.pts)}</td><td class="r">${o.n}</td><td class="r">${o.w||''}</td></tr>${open?cupRaces(o,a,cup):''}`; }).join('')}</table>
+    ${rows.map(o=>{ const a=fidToAth[o.fid], open=S.cupOpen===o.fid; return `<tr class="cx${a?' go':' inakt'}${a&&!a.aktiv?' inakt':''}${o.rank<=3?' p'+o.rank:''}${open?' open':''}" data-cx="${esc(o.fid)}" title="Vis rennene som ga poeng"><td class="r">${o.rank}</td><td>${open?'▾':'▸'} ${a?`<a data-id="${esc(a.id)}" title="Åpne utøverkortet">${esc(a.name)}</a>`:esc(a?a.name:'FIS '+o.fid)}</td><td>${esc(a?a.land||'':'')}</td><td class="r"><b>${o.pts}</b></td><td class="r">${o.rank===1?'':'−'+(lead-o.pts)}</td><td class="r">${o.n}</td><td class="r">${o.w||''}</td></tr>${open?cupRaces(o,a,cup):''}`; }).join('')}</table>
     ${t.rows.length>30?`<button class="more" id="cupall">${S.showAllCup?'Vis bare topp 30':'Vis alle '+t.rows.length}</button>`:''}`:'<div class="note">Ingen poeng delt ut ennå.</div>'}
     <p class="note">Regnet av resultatene i basen (de samme som pall og formkurve), kontrollert mot FIS' stilling hver gang data hentes. Delt plass ved lik poengsum. Klikk et blått navn for utøverkortet.</p></div>`;
 }
@@ -1038,7 +1060,7 @@ function arkiv(){
     ${r?`<h2 style="margin:6px 0">${esc(r.place)} (${esc(r.nat)}) · ${DSHORT[r.disc]} · ${SEX[S.sex]} · ${r.date}</h2>
     ${r.prelim?`<div class="warn">⚠ <b>Foreløpig:</b> lest fra PDF${r.file?' («'+esc(r.file)+'»)':''} og kontrollert mekanisk (plasser, tider, antall), men ikke mot FIS-databasen. Erstattes automatisk når FIS-dataene for rennet er hentet. <button data-delres="${esc(r.id)}">Fjern dette PDF-resultatet</button></div>${techLine(r)}`:''}
     <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}${p1?'<th class="r" title="Plassering etter 1. omgang (delt plass ved lik tid). Tom = kjørte ikke ut 1. omgang.">Plass etter 1. omg.</th>':''}</tr>
-    ${rows.map(x=>`<tr class="${x.a.aktiv?'go':'inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}"${x.a.aktiv?` data-id="${x.a.id}"`:' title="Ikke aktiv utøver"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}${p1?`<td class="r">${p1[x.fid]??''}</td>`:''}</tr>`).join('')}</table>
+    ${rows.map(x=>`<tr class="go${x.a.aktiv?'':' inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}" data-id="${x.a.id}"${x.a.aktiv?'':' title="Ingen start i 25/26–26/27, men kortet finnes"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}${p1?`<td class="r">${p1[x.fid]??''}</td>`:''}</tr>`).join('')}</table>
     <p class="note">${r.par?'Parallellrenn (utslag): FIS har ingen sluttider. ':''}Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk et blått navn (aktive utøvere) for å åpne kortet.</p>`:''}
   </div>`;
 }
@@ -1067,7 +1089,7 @@ function medalje(){
     ${r?`<h2 style="margin:6px 0">${S.ch} · ${CD[S.cd]} · ${SEX[S.sex]} · ${esc(r.place)} (${esc(r.nat)}) · ${r.date}</h2>
     <div class="chips" style="margin-bottom:10px">${medals.map(x=>`<div class="chip ${x.v===1?'p1':'pod'}" style="font-size:15px"><b>${x.v===1?'🥇':x.v===2?'🥈':'🥉'} ${esc(x.a.name)}</b><i>${esc(x.a.land||'')}</i></div>`).join('')}</div>
     <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}</tr>
-    ${rows.map(x=>`<tr class="${x.a.aktiv?'go':'inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}"${x.a.aktiv?` data-id="${x.a.id}"`:' title="Ikke aktiv utøver"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}</tr>`).join('')}</table>
+    ${rows.map(x=>`<tr class="go${x.a.aktiv?'':' inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}" data-id="${x.a.id}"${x.a.aktiv?'':' title="Ingen start i 25/26–26/27, men kortet finnes"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}</tr>`).join('')}</table>
     <p class="note">Full resultatliste fra FIS. Lagkonkurranser og parallell er ikke med. Klikk et blått navn (aktive utøvere) for å åpne kortet.</p>`:'<p class="note">Ingen mesterskapsdata.</p>'}
   </div>`;
 }
@@ -1111,7 +1133,7 @@ app.addEventListener('change',e=>{
   if(e.target.id==='ilabel'){ IMP.label=e.target.value; IMP.labelEdited=true; return; }
   if(e.target.id==='pfile'){ const fs=[...e.target.files]; if(fs.length) importFiles(fs); return; }
   if(e.target.id==='iforce'){ document.getElementById('iuse').disabled=!e.target.checked; return; }
-  if(e.target.id==='bfile'){ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ try{ const r=applyBackup(JSON.parse(t)); alert(`Hentet inn: ${r.lister} nye lister, ${r.notater} notater`+(r.konflikter?`. ${r.konflikter} notater ble ikke overskrevet fordi du har skrevet noe nytt der.`:'.')); localStorage.setItem('alpinBackupT',String(Date.now())); render(); }catch(err){ alert('Kunne ikke hente inn: '+err.message); } }); return; } if(e.target.id==='fven'){ S.ven=S.ven||{}; S.ven[S.sex+'|'+S.disc]=e.target.value; save(); render(); return; } if(e.target.id==='lsel'){ S.src=S.src||{}; S.src[S.sex+S.disc]=e.target.value; S.id=null; render(); } });
+  if(e.target.id==='bfile'){ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ try{ const r=applyBackup(JSON.parse(t)); alert(`Hentet inn: ${r.lister} nye lister, ${r.notater} notater, ${r.resultater} PDF-resultater, ${r.utovere} nye utøverkort`+(r.konflikter?`. ${r.konflikter} notater ble ikke overskrevet fordi du har skrevet noe nytt der.`:'.')); localStorage.setItem('alpinBackupT',String(Date.now())); if(r.resultater||r.utovere){ location.reload(); return; } render(); }catch(err){ alert('Kunne ikke hente inn: '+err.message); } }); return; } if(e.target.id==='fven'){ S.ven=S.ven||{}; S.ven[S.sex+'|'+S.disc]=e.target.value; save(); render(); return; } if(e.target.id==='lsel'){ S.src=S.src||{}; S.src[S.sex+S.disc]=e.target.value; S.id=null; render(); } });
 app.addEventListener('click',e=>{
   const sp=e.target.closest('[data-sp]'); if(sp){ const sc=app.querySelector('.spk-scroll'); if(sc) sc.scrollBy({left:+sp.dataset.sp*sc.clientWidth*0.8,behavior:'smooth'}); return; }
   const dd=e.target.closest('[data-d]'); if(dd){e.preventDefault();S.disc=dd.dataset.d;render();return}
