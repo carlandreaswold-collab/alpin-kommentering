@@ -123,7 +123,7 @@ tr.go{cursor:pointer}tr.go:hover{background:var(--panel2)}
   <datalist id="dl"></datalist>
 </header>
 <main id="app"></main>
-<script src="data.js?v=20261125120443"></script>
+<script src="data.js?v=20261126135655"></script>
 <script>
 const D = window.ALPIN_DATA;
 /* Resultater lest fra FIS-PDF (foreløpige, lagret i nettleseren). Legges inn blant rennene, men aldri oppå et renn som FIS-dataene allerede har. */
@@ -1028,16 +1028,17 @@ function arkiv(){
   const list=all.filter(r=>r.sex===S.sex&&(grp(r.disc)===S.disc||((r.disc==='CE'||r.disc==='PAR')&&S.disc==='SL'))&&r.season===S.season).sort((p,q)=>p.date<q.date?-1:1);
   let r=list.find(x=>x.id===S.rid)||list[list.length-1];
   if(r) S.rid=r.id;
-  const rows=r?r.res.map(([fid,v,t,r1,r2])=>({a:fidToAth[fid],v,t,r1,r2})).filter(x=>x.a):[];
+  const rows=r?r.res.map(([fid,v,t,r1,r2])=>({a:fidToAth[fid],fid,v,t,r1,r2})).filter(x=>x.a):[];
   rows.sort((p,q)=>{const pn=num(p.v),qn=num(q.v); return pn&&qn?p.v-q.v : pn?-1 : qn?1 : String(p.v).localeCompare(String(q.v))});
+  const p1=(r&&r.p1)||null;   // plass etter 1. omgang fra FIS (hele feltet, bygg/fis_omg1.py); finnes bare for SL/GS der alle 1. omgangs-tider er med
   const lbl=x=>`${x.prelim?'✎ ':''}${x.place}${grp(x.disc)==='FART'?' '+x.disc:''}${x.disc==='CE'?' city':''}${x.disc==='PAR'?' paral.':''} · ${x.date.slice(8)}.${x.date.slice(5,7)}`;
   return `<div class="card arkiv">
     <div class="seg" id="sSeason"></div>
     <div class="races">${list.map(x=>`<button class="${r&&x.id===r.id?'on':''}" data-r="${x.id}">${esc(lbl(x))}</button>`).join('')||'<span class="note">Ingen renn.</span>'}</div>
     ${r?`<h2 style="margin:6px 0">${esc(r.place)} (${esc(r.nat)}) · ${DSHORT[r.disc]} · ${SEX[S.sex]} · ${r.date}</h2>
     ${r.prelim?`<div class="warn">⚠ <b>Foreløpig:</b> lest fra PDF${r.file?' («'+esc(r.file)+'»)':''} og kontrollert mekanisk (plasser, tider, antall), men ikke mot FIS-databasen. Erstattes automatisk når FIS-dataene for rennet er hentet. <button data-delres="${esc(r.id)}">Fjern dette PDF-resultatet</button></div>${techLine(r)}`:''}
-    <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}<th class="r">Startnr ${NOW}</th></tr>
-    ${rows.map(x=>`<tr class="${x.a.aktiv?'go':'inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}"${x.a.aktiv?` data-id="${x.a.id}"`:' title="Ikke aktiv utøver"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}<td class="r">${(x.a.start[NOW]||{})[grp(r.disc)]??''}</td></tr>`).join('')}</table>
+    <table><tr><th class="r">Plass</th><th>Utøver</th><th>Land</th>${timeHead(r)}${p1?'<th class="r" title="Plassering etter 1. omgang (delt plass ved lik tid). Tom = kjørte ikke ut 1. omgang.">Plass etter 1. omg.</th>':''}</tr>
+    ${rows.map(x=>`<tr class="${x.a.aktiv?'go':'inakt'}${x.v>=1&&x.v<=3?' p'+x.v:''}"${x.a.aktiv?` data-id="${x.a.id}"`:' title="Ikke aktiv utøver"'}><td class="r">${esc(String(x.v).replace(/^DNF\d$/,'DNF'))}</td><td>${esc(x.a.name)}</td><td>${esc(x.a.land||'')}</td>${timeCells(x,r)}${p1?`<td class="r">${p1[x.fid]??''}</td>`:''}</tr>`).join('')}</table>
     <p class="note">${r.par?'Parallellrenn (utslag): FIS har ingen sluttider. ':''}Full resultatliste fra FIS (hele feltet). DNQ = ikke kvalifisert til 2. omgang. City event og parallell ligger under slalåm. Klikk et blått navn (aktive utøvere) for å åpne kortet.</p>`:''}
   </div>`;
 }
